@@ -1,6 +1,6 @@
 # Test Master
 
-App de tests **local, gratuita e instalable** (PWA) que genera preguntas a partir de tus propios documentos y **solo acepta las que puede demostrar con la fuente**. Funciona en web, Android e iPhone desde una única base de código. Todo se guarda en tu dispositivo: sin servidor, sin cuentas y sin coste de IA.
+App de tests **local, gratuita e instalable** (PWA) que importa preguntas ya redactadas a partir de tus documentos y **solo acepta las que puede demostrar con la fuente**. Funciona en web, Android e iPhone desde una única base de código. Todo se guarda en tu dispositivo: sin servidor, sin cuentas y sin coste de IA.
 
 ## Por qué es distinta
 
@@ -15,7 +15,7 @@ Solo las preguntas que superan el nivel 3 entran en los exámenes.
 ## Qué hace
 
 - **Documentos:** PDF, TXT o texto pegado. Huella SHA-256, versiones, índice de capítulos, fragmentos con página exacta. Un archivo idéntico no se vuelve a procesar.
-- **Calidad del texto:** texto nativo primero, OCR solo si hace falta, páginas dudosas marcadas y reprocesables, sin preguntas basadas en texto dudoso.
+- **Calidad del texto:** texto nativo primero, OCR cuando hace falta, páginas dudosas marcadas y reprocesables, sin preguntas basadas en texto dudoso.
 - **Generador + verificador independientes:** el generador (sin IA, determinista) propone; el verificador comprueba cita, página, versión, respuesta respaldada, distractores y duplicados. Umbral 90/100 **y** todos los controles críticos.
 - **Banco de preguntas persistente** con estados `draft`, `pending_validation`, `validated`, `rejected`, `needs_review`, `archived`.
 - **Exámenes:** simulacro de exactamente 40 preguntas validadas (si no hay suficientes, avisa y no inventa), modo examen y modo aprendizaje, falladas, favoritas, contrarreloj, repaso espaciado y reanudación.
@@ -66,7 +66,7 @@ Estado honesto de la versión 0.1:
 - **Dispositivos reales:** probada en Chrome de escritorio con tamaño móvil, no en Android/iPhone físicos.
 - **Sincronización** entre dispositivos: manual (exportar/importar), no automática.
 - **Distribuciones de preguntas** personalizada y por puntos débiles, equilibrio explícito de dificultad y paginación: pendientes.
-- **Tipos de pregunta:** el generador sin IA produce huecos, plazos/cifras y enumeraciones; menos variedad que un redactor humano o una IA.
+- **Importación de exámenes:** se reconocen preguntas numeradas con cuatro opciones A-D y clave de respuestas. Los documentos sin esa estructura no generan preguntas automáticamente.
 
 ## Licencia
 
@@ -77,3 +77,12 @@ El fondo azul petróleo permite comprobar que se ha cargado esta versión. Tras 
 
 ### Subir a GitHub
 Copia los archivos de esta carpeta a la raíz de tu repositorio y confirma los cambios. Activa GitHub Pages desde Settings → Pages, seleccionando Deploy from a branch y la rama main, carpeta /(root). No se ha publicado automáticamente en tu cuenta.
+
+
+## Versión 0.3 — importación fiel de exámenes
+
+- Importa preguntas ya redactadas con cuatro opciones A-D.
+- Conserva numeración, orden y texto de cada alternativa.
+- Lee la plantilla de respuestas y las explicaciones del PDF cuando están disponibles.
+- Las preguntas sin clave quedan pendientes y no entran en los exámenes.
+- No genera preguntas automáticas a partir de frases sueltas.

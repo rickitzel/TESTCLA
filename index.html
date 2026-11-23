@@ -167,6 +167,52 @@ function genQuestions(ver,max=80){
   for(const c of shuffle(chunks,r)){if(out.length>=max)break;const q=tryNum(c)||tryList(c)||tryCloze(c);if(q)out.push(q)}
   return out;
 }
+
+// Importa exámenes ya redactados: conserva enunciado, orden A-D, clave y explicación.
+function parseProvidedExam(pages){
+  const questions=[];let cur=null,activeOpt=-1,started=false;
+  const flush=()=>{if(cur){cur.q=cur.q.trim();cur.opts=cur.opts.map(x=>x.trim());if(cur.q&&cur.opts.length===4)questions.push(cur);cur=null;activeOpt=-1}};
+  for(const pg of pages){
+    if(!pg||!pg.text)continue;
+    for(const raw of pg.text.split(/\n+/)){
+      const line=raw.replace(/\s+/g,' ').trim();if(!line)continue;
+      if(/^plantilla de respuestas$/i.test(line)){flush();started=true;break}
+      if(started)break;
+      const qm=line.match(/^(\d{1,2})[.)]\s+(.+)$/);
+      const om=line.match(/^([A-D])[).:]\s*(.*)$/i);
+      if(qm){flush();cur={number:+qm[1],q:qm[2],opts:[],page:pg.n};activeOpt=-1;continue}
+      if(cur&&om){const ix='ABCD'.indexOf(om[1].toUpperCase());if(ix===cur.opts.length){cur.opts.push(om[2]);activeOpt=ix}else if(ix<4){while(cur.opts.length<=ix)cur.opts.push('');cur.opts[ix]=om[2];activeOpt=ix}continue}
+      if(cur&&activeOpt>=0&&cur.opts[activeOpt])cur.opts[activeOpt]+=' '+line;
+      else if(cur&&cur.opts.length===0)cur.q+=' '+line;
+    }
+    if(started)break;
+  }
+  flush();
+  const all=pages.filter(Boolean).map(p=>p.text).join('\n');
+  const km=all.match(/(?:^|\n)\s*Plantilla de respuestas\s*(?:\n|$)/i),sm=all.match(/(?:^|\n)\s*Soluciones explicadas\s*(?:\n|$)/i);const keyAt=km?km.index+km[0].lastIndexOf('Plantilla'): -1,solAt=sm?sm.index+sm[0].lastIndexOf('Soluciones'):-1;
+  const keyText=keyAt>=0?all.slice(keyAt,solAt>=0?solAt:undefined):'';
+  const answers={};
+  // La plantilla suele estar maquetada en varias columnas: cada pareja número-letra es independiente.
+  for(const m of keyText.matchAll(/(?:^|\s)(\d{1,2})\s+([A-D])(?=\s|$)/g))answers[+m[1]]=m[2].toUpperCase();
+  const expText=solAt>=0?all.slice(solAt):'';const explanations={};
+  const er=/\n\s*(\d{1,2})[.)]\s*([A-D])\.\s*([\s\S]*?)(?=\n\s*\d{1,2}[.)]\s*[A-D]\.\s*|\n\s*Módulo\s+\d|$)/g;
+  for(const m of expText.matchAll(er))explanations[+m[1]]={letter:m[2],text:m[3].replace(/\s+/g,' ').trim()};
+  return questions.sort((a,b)=>a.number-b.number).map(x=>{
+    const letter=answers[x.number]||'',expl=explanations[x.number];
+    x.opts=x.opts.map(o=>o.replace(/\s+Módulo\s+\d+.*$/i,'').trim());
+    const validKey=/^[A-D]$/.test(letter)&&'ABCD'.indexOf(letter)<x.opts.length;
+    return{id:uid(),vid:null,docId:null,kind:'provided',sourceOrder:x.number,sourceNumber:x.number,q:x.q,opts:x.opts,ans:validKey?'ABCD'.indexOf(letter):0,answerLetter:letter,
+      expl:expl&&expl.text?expl.text.replace(/\s+Preguntas elaboradas a partir del temario aportado[\s\S]*$/i,'').replace(/\s+Módulo\s+\d+.*$/i,'').trim():(validKey?'La respuesta correcta figura en la plantilla del documento.':'Esta pregunta no tiene respuesta en la plantilla; requiere revisión.'),
+      ev:{vid:null,page:x.page,chunkId:null,quote:x.q+' '+x.opts.map((o,i)=>'ABCD'[i]+') '+o).join(' ')},diff:'media',state:validKey?'validated':'needs_review',score:validKey?100:0,checks:[],reasons:validKey?[]:['No aparece en la plantilla de respuestas'],created:Date.now(),srs:{box:0,due:0},st:{seen:0,ok:0,ko:0,last:0},fav:false};
+  });
+}
+async function saveProvidedQuestions(ver,parsed){
+  let ok=0,pending=0;
+  for(const q of parsed){q.vid=ver.id;q.docId=ver.docId;q.ev.vid=ver.id;await dbPut('questions',q);if(q.state==='validated')ok++;else pending++}
+  await audit('job',`Importación de examen: ${parsed.length} preguntas, ${ok} con clave, ${pending} pendientes`,{proposed:parsed.length,validated:ok,rejected:0,pending,ms:0,tokens:0,cost:0});
+  await load();return{total:parsed.length,ok,pending};
+}
+
 function verifyQ(q,ver,others){
   const ck=[],add=(name,ok,crit,why)=>ck.push({name,ok:!!ok,crit:crit!==false,why:why||name});
   const fin=()=>{
@@ -243,7 +289,7 @@ async function load(){
 const saveProf=()=>dbPut('kv',S.prof);
 const curVer=d=>S.vers.find(v=>v.id===d.cur);
 const curQs=(f)=>S.qs.filter(q=>S.docs.some(d=>d.cur===q.vid)&&(!f||f(q)));
-const valid=()=>curQs(q=>q.state==='validated');
+const valid=()=>curQs(q=>q.state==='validated'&&q.kind==='provided');
 
 /* ============ UI helpers ============ */
 let AC;function beep(f,d=.12,t='sine'){if(!S.prof.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t;o.frequency.value=f;g.gain.value=.07;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d)}catch(e){}}
@@ -319,16 +365,25 @@ async function ingest(file){
   try{
     progress('Calculando huella SHA-256…',.02);
     const buf=await file.arrayBuffer(),hash=await sha256(buf);
-    if(S.vers.some(v=>v.hash===hash)){progress(null);toast('Documento idéntico: ya estaba procesado (0 coste)');return}
+    const duplicate=S.vers.find(v=>v.hash===hash);
+    if(duplicate){
+      const already=S.qs.some(q=>q.vid===duplicate.id&&q.kind==='provided');
+      if(already){progress(null);toast('Este examen ya está importado');return}
+      const parsed=parseProvidedExam(duplicate.pages||[]);
+      if(!parsed.length){progress(null);toast('El documento ya existe, pero no contiene un examen reconocible',true);return}
+      const res=await saveProvidedQuestions(duplicate,parsed);progress(null);toast(`✅ Examen recuperado: ${res.ok} preguntas en orden${res.pending?' · '+res.pending+' pendientes':''}`);return;
+    }
     let pages,blob=null;
     if(/\.pdf$/i.test(file.name)||file.type==='application/pdf'){const e=await extractPdf(buf,progress);pages=e.pages;blob=new Blob([buf],{type:'application/pdf'})}
     else pages=txtPages(new TextDecoder().decode(buf));
     if(!pages.length||pages.every(p=>p.text.length<40&&!p.flag))throw new Error('No se encontró texto utilizable');
     progress('Indexando contenido…',.8);
     const ver=await registerVersion(file.name,hash,pages,buf.byteLength,blob);
-    const res=await generateFor(ver);progress(null);
+    const parsed=parseProvidedExam(pages);
+    if(!parsed.length)throw new Error('No he encontrado un examen estructurado con preguntas y cuatro opciones A-D. No se generarán preguntas inventadas.');
+    const res=await saveProvidedQuestions(ver,parsed);progress(null);
     const fl=pages.filter(p=>p.flag).length;
-    toast(`✅ ${res.v} preguntas validadas, ${res.r} rechazadas${res.p?', '+res.p+' pendientes':''}${fl?' · '+fl+' págs. en revisión':''}`);
+    toast(`✅ ${res.ok} preguntas importadas en orden${res.pending?' · '+res.pending+' sin clave para revisar':''}${fl?' · '+fl+' págs. dudosas':''}`);
   }catch(e){progress(null);await audit('error',e.message);toast('Error: '+e.message,true)}
 }
 async function ingestText(name,text){
@@ -336,8 +391,10 @@ async function ingestText(name,text){
     const buf=new TextEncoder().encode(text),hash=await sha256(buf.buffer);
     if(S.vers.some(v=>v.hash===hash)){toast('Texto idéntico ya procesado');return}
     const pages=txtPages(text);if(!pages.length)throw new Error('Texto vacío');
-    const ver=await registerVersion(name||'Texto pegado',hash,pages,buf.byteLength,null),res=await generateFor(ver);progress(null);
-    toast(`✅ ${res.v} validadas, ${res.r} rechazadas`);
+    const ver=await registerVersion(name||'Texto pegado',hash,pages,buf.byteLength,null),parsed=parseProvidedExam(pages);
+    if(!parsed.length)throw new Error('No he encontrado preguntas numeradas con cuatro opciones A-D. No se inventarán preguntas.');
+    const res=await saveProvidedQuestions(ver,parsed);progress(null);
+    toast(`✅ ${res.ok} preguntas importadas en orden${res.pending?' · '+res.pending+' pendientes de clave':''}`);
   }catch(e){progress(null);toast('Error: '+e.message,true)}
 }
 
@@ -355,8 +412,9 @@ async function startRun({mode,docIds,n,learn,secs}){
     <div class="row wrap">${pool.length?`<button class="pri" data-a="runN" data-mode="${mode}" data-n="${pool.length}" data-learn="${learn?1:0}" data-docs="${(docIds||[]).join(',')}">Hacer examen de ${pool.length}</button>`:''}<button data-a="tab" data-t="lib">Añadir material</button><button data-a="close">Cerrar</button></div>`);return;
   }
   if(!pool.length){toast(mode==='review'?'🎉 Nada pendiente de repaso hoy':'No hay preguntas para este modo',true);return}
-  const ids=pickExam(pool,Math.min(want,pool.length),Math.random).map(q=>q.id);
-  S.run={id:uid(),mode,learn:!!learn,ids,i:0,ans:{},t0:Date.now(),secs:secs||0,combo:0,xp:0,done:false,res:null,locked:false,sel:null,left:secs||0};
+  const ordered=(mode==='sim'||mode==='custom')&&pool.length&&pool.every(q=>q.kind==='provided')?pool.slice().sort((a,b)=>(a.sourceOrder||a.sourceNumber||0)-(b.sourceOrder||b.sourceNumber||0)).slice(0,Math.min(want,pool.length)):pickExam(pool,Math.min(want,pool.length),Math.random);
+  const ids=ordered.map(q=>q.id);
+  S.run={id:uid(),mode,learn:true,ids,i:0,ans:{},t0:Date.now(),secs:secs||0,combo:0,xp:0,done:false,res:null,locked:false,sel:null,left:secs||0};
   S.modal=null;S.tab='run';await saveRun();render();startTimer();
 }
 const saveRun=()=>dbPut('sessions',{id:S.run.id,status:'open',run:{...S.run,res:null},ts:Date.now()});
@@ -402,12 +460,12 @@ function vHome(){
   bump();const goal=Math.min(100,Math.round(p.todayN/p.goal*100)),nv=valid().length,now=Date.now();
   const due=valid().filter(q=>q.st.seen>0&&q.srs.due<=now).length,failed=valid().filter(q=>q.st.ko>0&&q.st.ok<=q.st.ko).length,favs=valid().filter(q=>q.fav).length;
   const open=S.sessions.find(s=>s.status==='open');
-  return`<div class="row sp"><div><h1>Test Master · v0.2</h1><div class="mu">Entrena. Acierta. Sube de nivel.</div></div><div class="flame">🔥 <b>${p.streak}</b></div></div>
+  return`<div class="row sp"><div><h1>Test Master · v0.4</h1><div class="mu">Tus preguntas, en orden. Responde y comprueba.</div></div><div class="flame">🔥 <b>${p.streak}</b></div></div>
   <div class="card row"><div class="ring" style="--p:${pc}%"><span>${L}</span></div><div class="g"><div class="row sp"><b>Nivel ${L}</b><span class="mu">${p.xp} XP</span></div><div class="bar"><i style="width:${pc}%"></i></div><div class="mu sm" style="margin-top:6px">Meta de hoy: ${p.todayN}/${p.goal} preguntas</div><div class="bar"><i style="width:${goal}%;background:linear-gradient(90deg,#22c55e,#a3e635)"></i></div></div></div>
   ${open?`<div class="card row sp"><div><b>⏸ Examen sin terminar</b><div class="mu sm">${open.run.ids.length} preguntas · pregunta ${open.run.i+1}</div></div><button class="pri" data-a="resume">Reanudar</button></div>`:''}
   ${nv===0?`<div class="card"><h3>Empieza aquí 👇</h3><p class="mu">Sube un PDF o pega texto en la Biblioteca. La app lo analiza, crea preguntas y solo usa las que puede demostrar con la fuente.</p><button class="pri" data-a="tab" data-t="lib">📚 Añadir material</button></div>`:''}
   <div class="grid">
-    <button class="tile big" data-a="setup" data-mode="sim"><span class="e">🎯</span><b>Simulacro de 40 preguntas</b><span class="sm">${nv} preguntas verificadas disponibles</span></button>
+    <button class="tile big" data-a="setup" data-mode="sim"><span class="e">🎯</span><b>Examen de preguntas importadas</b><span class="sm">${nv} preguntas con respuesta · orden original</span></button>
     <button class="tile" data-a="runq" data-mode="review"><span class="e">🧠</span><b>Repaso del día</b><span class="mu sm">${due} pendientes</span></button>
     <button class="tile" data-a="runq" data-mode="failed"><span class="e">❌</span><b>Falladas</b><span class="mu sm">${failed} por dominar</span></button>
     <button class="tile" data-a="runq" data-mode="fav"><span class="e">⭐</span><b>Favoritas</b><span class="mu sm">${favs} guardadas</span></button>
@@ -417,8 +475,8 @@ function vHome(){
 }
 function vLib(){
   return`<div class="row sp"><h1>Biblioteca</h1></div>
-  <div class="card"><div class="row wrap"><button class="pri g" data-a="add">📄 Subir PDF / TXT</button><button class="g" data-a="paste">✍️ Pegar texto</button></div>
-  <p class="mu sm">Cada archivo se procesa una sola vez (huella SHA-256). Un archivo idéntico no se vuelve a analizar; uno modificado crea una versión nueva y conserva la anterior.</p></div>
+  <div class="card"><div class="row wrap"><button class="pri g" data-a="add">📄 Importar examen PDF / TXT</button><button class="g" data-a="paste">✍️ Pegar texto</button></div>
+  <p class="mu sm">Importa exámenes que ya contienen preguntas numeradas, cuatro opciones A-D y plantilla de respuestas. Se conserva el enunciado y el orden original: la app no inventa preguntas ni cambia las opciones.</p></div>
   ${S.docs.map(d=>{const v=curVer(d);if(!v)return'';const qs=S.qs.filter(q=>q.vid===v.id),c=s=>qs.filter(q=>q.state===s).length,fl=v.pages.filter(p=>p.flag);
   return`<div class="card"><div class="row sp"><h3>${esc(d.name)}</h3><span class="pill">v${v.n}</span></div>
   <div class="mu sm">${v.pages.length} págs · ${v.chunks.length} fragmentos · SHA ${esc(v.hash.slice(0,10))}… · ${new Date(v.processed).toLocaleDateString()}</div>
@@ -445,7 +503,7 @@ function vMore(){
   <div class="card"><h3>💾 Copia de seguridad</h3><p class="mu sm">Exporta todo (documentos, preguntas, progreso) a un archivo con comprobación de integridad SHA-256. Es tu forma de sincronizar entre dispositivos.</p><div class="row"><button class="pri g" data-a="export">Exportar</button><button class="g" data-a="import">Importar</button></div></div>
   <div class="card"><button data-a="audit" class="g" style="width:100%">🧾 Informe de auditoría</button></div>
   <div class="card"><button class="dng" data-a="wipe" style="width:100%">Borrar todos los datos</button></div>
-  <p class="mu sm">Todo se guarda en este dispositivo. Coste de IA: 0 €. Las preguntas se generan con reglas deterministas y solo se aceptan si pasan comprobaciones contra el texto original.</p>`;
+  <p class="mu sm">Todo se guarda en este dispositivo. Importa preguntas ya redactadas: no se generan ni se reformulan automáticamente.</p>`;
 }
 function vRun(){
   const R=S.run;
@@ -458,8 +516,8 @@ function vRun(){
   ${R.secs?`<div class="bar" style="height:6px"><i id="tb" style="width:${R.left/R.secs*100}%;background:linear-gradient(90deg,#f59e0b,#ef4444)"></i></div>`:''}
   ${R.combo>=2?`<div class="wa" style="font-weight:800;margin-top:6px">🔥 Combo x${R.combo}</div>`:''}
   <div class="card"><div class="q">${esc(q.q)}</div></div>
-  ${q.opts.map((o,i)=>{let c='opt';if(R.locked){if(i===q.ans)c+=' good';else if(i===R.sel)c+=' bad'}else if(R.sel===i)c+=' sel';return`<button class="${c}" data-a="pick" data-i="${i}"><b>${'ABCD'[i]}</b> &nbsp;${esc(o)}</button>`}).join('')}
-  ${R.locked?`<div class="card"><b class="${R.sel===q.ans?'ok':'ko'}">${R.sel===q.ans?'¡Correcto!':R.sel<0?'⏱ Tiempo agotado':'Incorrecto'}</b><div class="quote"><b>Explicación:</b> ${esc(q.expl||q.ev.quote)}</div></div>`:''}
+  ${q.opts.map((o,i)=>{let c='opt';if(R.locked){if(i===q.ans)c+=' good';else if(i===R.sel)c+=' bad'}else if(R.sel===i)c+=' sel';return`<button class="${c}" data-a="pick" data-i="${i}"><b>${'ABCD'[i]}</b> &nbsp;${esc(o)} ${R.locked&&i===q.ans?'✓':R.locked&&i===R.sel&&i!==q.ans?'✕':''}</button>`}).join('')}
+  ${R.locked?`<div class="card"><b class="${R.sel===q.ans?'ok':'ko'}">${R.sel===q.ans?'✓ CORRECTO':R.sel<0?'⏱ TIEMPO AGOTADO':'✕ INCORRECTO'}</b><div class="sm ok" style="margin-top:8px"><b>Respuesta correcta: ${'ABCD'[q.ans]}) ${esc(q.opts[q.ans])}</b></div><div class="quote"><b>Explicación:</b> ${esc(q.expl||q.ev.quote)}</div></div>`:''}
   ${(R.locked||(!R.learn&&R.sel!=null))?`<button class="pri" style="width:100%;margin-top:6px" data-a="next">${R.i+1>=R.ids.length?'Finalizar 🏁':'Siguiente →'}</button>`:''}`;
 }
 function render(){
@@ -476,14 +534,14 @@ const A={
   paste:()=>modal(`<h2>Pegar texto</h2><input id="pn" placeholder="Nombre (ej. Tema 3)"><textarea id="pt" placeholder="Pega aquí el temario…"></textarea><div class="row"><button class="pri g" data-a="pasteGo">Procesar</button><button class="g" data-a="close">Cancelar</button></div>`),
   pasteGo:async()=>{const t=$('#pt').value,n=$('#pn').value;S.modal=null;progress('Procesando texto…',.5);await ingestText(n,t);progress(null);render()},
   runq:d=>{const m=d.mode;if(m==='time')startRun({mode:'time',n:10,learn:true,secs:20});else startRun({mode:m,n:m==='review'||m==='failed'||m==='fav'?20:40,learn:true})},
-  setup:d=>modal(`<h2>🎯 Simulacro</h2><label class="mu sm">Alcance</label><select id="sd"><option value="">Todos los documentos</option>${S.docs.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select><label class="mu sm">Preguntas</label><select id="sn"><option>40</option><option>20</option><option>10</option></select><label class="mu sm">Modo</label><select id="sm"><option value="0">Examen (corrección al final)</option><option value="1">Aprendizaje (feedback inmediato)</option></select><div class="row" style="margin-top:10px"><button class="pri g" data-a="setupGo">¡Empezar!</button><button class="g" data-a="close">Cancelar</button></div>`),
+  setup:d=>modal(`<h2>🎯 Simulacro</h2><label class="mu sm">Alcance</label><select id="sd"><option value="">Todos los documentos</option>${S.docs.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select><label class="mu sm">Preguntas</label><select id="sn">${[50,40,20,10].filter(n=>n<=valid().length).map((n,i)=>`<option ${i===0?'selected':''}>${n}</option>`).join('')}</select><label class="mu sm">Modo</label><select id="sm"><option value="1">Corrección inmediata (después de cada respuesta)</option></select><div class="row" style="margin-top:10px"><button class="pri g" data-a="setupGo">¡Empezar!</button><button class="g" data-a="close">Cancelar</button></div>`),
   setupGo:()=>{const d=$('#sd').value;startRun({mode:'sim',docIds:d?[d]:null,n:+$('#sn').value,learn:$('#sm').value==='1'})},
   runN:d=>startRun({mode:'custom',docIds:d.docs?d.docs.split(','):null,n:+d.n,learn:d.learn==='1'}),
   runDoc:d=>startRun({mode:'sim',docIds:[d.id],n:40,learn:false}),
   pick:d=>choose(+d.i),next:nextQ,fav:d=>toggleFav(d.id),
   exit:()=>modal(`<h2>¿Salir?</h2><p class="mu">Tu progreso se guarda y podrás reanudar.</p><div class="row"><button class="g" data-a="close">Seguir</button><button class="pri g" data-a="home2">Salir</button></div>`),
   home2:async()=>{clearInterval(TM);S.modal=null;await load();S.tab='home';S.run=null;render()},
-  resume:async()=>{const s=S.sessions.find(x=>x.status==='open');if(!s)return;S.run=s.run;S.run.locked=false;S.run.sel=S.run.ans[S.run.i]!=null?S.run.ans[S.run.i]:null;S.tab='run';render();startTimer()},
+  resume:async()=>{const s=S.sessions.find(x=>x.status==='open');if(!s)return;S.run=s.run;S.run.learn=true;S.run.locked=false;S.run.sel=S.run.ans[S.run.i]!=null?S.run.ans[S.run.i]:null;S.tab='run';render();startTimer()},
   approve:async d=>{const q=qOf(d.id);q.state='validated';q.validatedAt=Date.now();q.reviewedBy='humano';await dbPut('questions',q);await audit('review','Aprobada manualmente '+q.id);render();toast('Aprobada')},
   reject:async d=>{const q=qOf(d.id);q.state='rejected';q.reasons=['Rechazada manualmente'];await dbPut('questions',q);await audit('review','Rechazada manualmente '+q.id);render()},
   tog:async d=>{S.prof[d.k]=!S.prof[d.k];await saveProf();render()},

@@ -25,3 +25,20 @@
 - Explicación breve vinculada a la fuente en el modo aprendizaje y en la corrección final de todas las preguntas.
 - Cambio de caché del service worker para forzar la actualización.
 - Nota: las preguntas siguen siendo deterministas; no se incorpora un modelo de comprensión semántica ni se garantiza la exactitud del OCR.
+
+
+## 0.3.0 — importación de exámenes existentes
+
+- Sustituida la generación automática de preguntas a partir de frases por la importación estructurada de preguntas proporcionadas.
+- Conserva enunciados, opciones A-D y orden original.
+- Importa la clave y las explicaciones del documento; preguntas sin clave quedan pendientes.
+- Señal visual ✓/✕ en la corrección.
+- No inventa preguntas cuando el documento no tiene formato de examen reconocible.
+
+
+## 0.4.0 — corrección inmediata
+
+- Todos los modos de examen muestran el resultado al seleccionar una respuesta, sin esperar al final.
+- La opción correcta queda marcada en verde y la explicación aparece inmediatamente.
+- Se muestra explícitamente la letra y el texto de la respuesta correcta.
+- El service worker utiliza una nueva versión de caché para distribuir la actualización.
