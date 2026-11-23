@@ -18,3 +18,10 @@
 - Preguntas de versiones anteriores de un documento ahora pasan a `archived`.
 - Regenerar ya no guarda duplicados; la importación acepta respuestas A/B/C/D; la fusión de copias respeta la fecha real de las respuestas.
 - Service worker con red primero para ver actualizaciones.
+
+## 0.2.0 — mejora de lectura y corrección
+- Fondo azul petróleo para identificar la nueva versión.
+- Detección heurística de extracción defectuosa y OCR alternativo para páginas sospechosas.
+- Explicación breve vinculada a la fuente en el modo aprendizaje y en la corrección final de todas las preguntas.
+- Cambio de caché del service worker para forzar la actualización.
+- Nota: las preguntas siguen siendo deterministas; no se incorpora un modelo de comprensión semántica ni se garantiza la exactitud del OCR.

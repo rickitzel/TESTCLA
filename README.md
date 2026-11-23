@@ -71,3 +71,9 @@ Estado honesto de la versión 0.1:
 ## Licencia
 
 MIT. Ver [LICENSE](LICENSE).
+
+## Actualización 0.2.0
+El fondo azul petróleo permite comprobar que se ha cargado esta versión. Tras contestar en modo aprendizaje se muestra una explicación basada en la cita, y al finalizar un examen se corrigen todas las respuestas. Se intenta OCR también cuando la extracción nativa parece corrupta. **Importante:** no se ha incorporado inteligencia artificial para generar preguntas conceptuales; el generador sigue siendo por reglas. Revisa los resultados OCR y las preguntas antes de estudiar contenidos críticos.
+
+### Subir a GitHub
+Copia los archivos de esta carpeta a la raíz de tu repositorio y confirma los cambios. Activa GitHub Pages desde Settings → Pages, seleccionando Deploy from a branch y la rama main, carpeta /(root). No se ha publicado automáticamente en tu cuenta.

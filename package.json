@@ -1,10 +1,12 @@
 {
   "name": "test-master",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "App de tests local y gratuita (PWA) con preguntas verificadas contra el documento original.",
   "private": true,
   "license": "MIT",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "node --test",
     "start": "python3 -m http.server 8000"

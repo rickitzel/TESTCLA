@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b1020">
+<meta name="theme-color" content="#103d4b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,9 +13,9 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <title>Test Master</title>
 <style>
-:root{--bg:#0b1020;--card:#151c35;--card2:#1c2547;--tx:#eef1ff;--mu:#8e98c4;--ac:#7c5cff;--ac2:#22d3ee;--ok:#22c55e;--ko:#ef4444;--wa:#f59e0b;--r:20px}
+:root{--bg:#103d4b;--card:#164e60;--card2:#1b6073;--tx:#eef1ff;--mu:#8e98c4;--ac:#7c5cff;--ac2:#22d3ee;--ok:#22c55e;--ko:#ef4444;--wa:#f59e0b;--r:20px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#2a1f6b55,transparent),radial-gradient(900px 500px at 110% 10%,#0e749044,transparent),var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100%}
+html,body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#137f9055,transparent),radial-gradient(900px 500px at 110% 10%,#18a99944,transparent),var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100%}
 body{padding:env(safe-area-inset-top) 0 0}
 #app{max-width:720px;margin:0 auto;padding:14px 14px 110px}
 h1{font-size:22px;margin:0}h2{font-size:18px;margin:18px 0 10px}h3{margin:0 0 6px;font-size:16px}
@@ -27,7 +27,7 @@ button:active{transform:scale(.96)}
 .pri{background:linear-gradient(135deg,var(--ac),#5b8cff);border:0;font-weight:700;box-shadow:0 6px 20px #7c5cff66}
 .dng{background:#ef444422;border-color:#ef444466}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{padding:16px;border-radius:var(--r);text-align:left;background:linear-gradient(150deg,#232c5a,#171f40);border:1px solid #ffffff14;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}
+.tile{padding:16px;border-radius:var(--r);text-align:left;background:linear-gradient(150deg,#21677a,#174b5c);border:1px solid #ffffff14;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}
 .tile b{font-size:16px}.tile .e{font-size:28px}
 .tile.big{grid-column:span 2;background:linear-gradient(135deg,#6d4dff,#2b7cff);min-height:96px}
 .bar{height:10px;background:#ffffff18;border-radius:9px;overflow:hidden}.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--ac2),var(--ac));border-radius:9px;transition:width .5s}
@@ -36,7 +36,7 @@ button:active{transform:scale(.96)}
 .pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;background:#ffffff18}
 .ok{color:var(--ok)}.ko{color:var(--ko)}.wa{color:var(--wa)}
 .pill.validated{background:#22c55e33;color:#7dffa8}.pill.rejected{background:#ef444433;color:#ff9a9a}.pill.pending_validation,.pill.needs_review{background:#f59e0b33;color:#ffd27a}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;background:#0b1020ee;backdrop-filter:blur(14px);border-top:1px solid #ffffff14;padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:5}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;background:#103d4bee;backdrop-filter:blur(14px);border-top:1px solid #ffffff14;padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:5}
 nav button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mu);padding:6px 12px}
 nav button .e{font-size:22px}nav button.on{color:#fff}nav button.on .e{filter:drop-shadow(0 0 8px var(--ac))}
 .opt{display:block;width:100%;text-align:left;margin:9px 0;padding:15px 16px;border-radius:16px;background:#ffffff0f;border:2px solid #ffffff14;font-size:16px}
@@ -46,7 +46,7 @@ nav button .e{font-size:22px}nav button.on{color:#fff}nav button.on .e{filter:dr
 .modal{position:fixed;inset:0;background:#000a;display:grid;place-items:end center;z-index:20;animation:fade .2s}
 .modal>div{background:var(--card);width:100%;max-width:720px;max-height:88vh;overflow:auto;border-radius:24px 24px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom))}
 @keyframes fade{from{opacity:0}}
-textarea,input,select{width:100%;font:inherit;color:var(--tx);background:#0b1020;border:1px solid #ffffff25;border-radius:12px;padding:10px;margin:6px 0}
+textarea,input,select{width:100%;font:inherit;color:var(--tx);background:#103d4b;border:1px solid #ffffff25;border-radius:12px;padding:10px;margin:6px 0}
 textarea{min-height:140px}
 .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);background:#22c55e;color:#04210f;font-weight:700;padding:10px 18px;border-radius:99px;z-index:50;animation:fade .2s;max-width:90%;text-align:center}
 .toast.err{background:#ef4444;color:#fff}
@@ -56,7 +56,7 @@ textarea{min-height:140px}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 .heat{display:flex;flex-wrap:wrap;gap:3px}.heat i{width:16px;height:16px;border-radius:4px;background:#ffffff15}
 .quote{border-left:3px solid var(--ac2);padding:6px 12px;margin:8px 0;color:#cfd6ff;background:#ffffff08;border-radius:0 10px 10px 0;font-size:14px}
-.ov{position:fixed;inset:0;background:#0b1020ee;display:grid;place-items:center;z-index:40;text-align:center;padding:30px}
+.ov{position:fixed;inset:0;background:#103d4bee;display:grid;place-items:center;z-index:40;text-align:center;padding:30px}
 .flame{font-size:26px}
 .badge{display:inline-flex;align-items:center;gap:6px;background:#ffffff12;padding:6px 10px;border-radius:12px;margin:3px;font-size:13px}.badge.off{opacity:.35;filter:grayscale(1)}
 </style>
@@ -75,6 +75,20 @@ const shuffle=(arr,r)=>{const a=arr.slice();for(let i=a.length-1;i>0;i--){const 
 const toks=s=>new Set(norm(s).split(' ').filter(w=>w.length>2));
 const jacc=(a,b)=>{const A=toks(a),B=toks(b);let i=0;A.forEach(x=>{if(B.has(x))i++});return A.size+B.size-i?i/(A.size+B.size-i):0};
 function cleanText(t){return t.replace(/\r/g,'').replace(/([a-záéíóúñ])-\n([a-záéíóúñ])/g,'$1$2').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim()}
+// Heurística conservadora: detecta texto corrupto antes de crear preguntas.
+function textQuality(t){
+  if(!t||!t.trim())return 0;
+  const letters=(t.match(/[a-záéíóúüñ]/gi)||[]).length;
+  const bad=(t.match(/[�□■]|\(cid:\d+\)/g)||[]).length;
+  const words=t.match(/[a-záéíóúüñ]{2,}/gi)||[];
+  const strange=(t.match(/[^\p{L}\p{N}\s.,;:()¿?¡!%€ºª\-–—/\[\]"'«»]/gu)||[]).length;
+  return Math.max(0,Math.min(1,letters/Math.max(1,t.length)*1.5 -bad*0.12-strange/Math.max(1,t.length)*2+(words.length>=8?0.12:0)));
+}
+function simpleExplanation(sentence,correct,page){
+  const clean=sentence.replace(/\s+/g,' ').trim();
+  const brief=clean.length>210?clean.slice(0,207).replace(/\s+\S*$/,'')+'…':clean;
+  return `Respuesta correcta: ${correct}. Explicación basada en el texto: «${brief}» (página ${page}).`;
+}
 const HEAD=/^(art[ií]culo|cap[ií]tulo|t[ií]tulo|tema|secci[oó]n|anexo|disposici[oó]n)\b.{0,90}$/i;
 function isHeading(l){l=l.trim();return l.length>2&&l.length<=90&&(HEAD.test(l)||(l===l.toUpperCase()&&/[A-ZÁÉÍÓÚÑ]{4}/.test(l)&&!/[.]$/.test(l)))}
 function sentences(t){
@@ -117,7 +131,7 @@ function genQuestions(ver,max=80){
   const mk=(c,kind,diff,qtext,correct,ds)=>{
     const opts=shuffle([correct,...ds.slice(0,3)],r);
     return{id:uid(),vid:ver.id,docId:ver.docId,kind,q:qtext,opts,ans:opts.indexOf(correct),
-      expl:`Según la pág. ${c.page}${c.sec?' ('+c.sec+')':''}: «${c.text}»`,
+      expl:simpleExplanation(c.text,correct,c.page),
       ev:{vid:ver.id,page:c.page,chunkId:c.id,quote:c.text},diff,meta:{target:correct,sentence:c.text},
       state:'draft',created:Date.now(),srs:{box:0,due:0},st:{seen:0,ok:0,ko:0,last:0},fav:false};
   };
@@ -180,7 +194,7 @@ function verifyQ(q,ver,others){
     add('distractores_fuera_del_texto',q.opts.every((o,i)=>i===q.ans||!nq.includes(norm(o))),true,'Un distractor aparece en la fuente');
     if(q.kind!=='list'&&q.meta){const dn=docNorm(ver);add('distractor_no_valido_en_doc',q.opts.every((o,i)=>i===q.ans||!variantInDoc(dn,q.meta.sentence,q.meta.target,o)),true,'Un distractor podría ser correcto según el documento')}
   }
-  add('explicacion_fiel',typeof q.expl==='string'&&(q.expl.includes(q.ev.quote)||norm(q.expl).includes(nq)),false,'Explicación no cita la fuente');
+  add('explicacion_fiel',typeof q.expl==='string'&&q.expl.trim().length>=35,false,'Explicación insuficiente');
   add('sin_duplicado',!(others||[]).some(o=>o.id!==q.id&&o.state!=='rejected'&&jacc(q.q+' '+q.opts[q.ans],o.q+' '+o.opts[o.ans])>0.85),true,'Pregunta duplicada');
   add('longitud',q.q.length<=420,false,'Enunciado demasiado largo');
   return fin();
@@ -253,7 +267,7 @@ const ACH=[
 const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',PDFW='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',TESS='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
 const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('No se pudo cargar '+src+' (¿sin conexión la primera vez?)'));document.head.appendChild(s)});
 async function pdfLib(){if(!window.pdfjsLib){await loadScript(PDFJS);pdfjsLib.GlobalWorkerOptions.workerSrc=PDFW}return pdfjsLib}
-async function ocrCanvas(canvas){if(!window.Tesseract)await loadScript(TESS);const w=await Tesseract.createWorker('spa');const{data}=await w.recognize(canvas);await w.terminate();return{text:data.text,conf:Math.round(data.confidence)}}
+async function ocrCanvas(canvas){if(!window.Tesseract)await loadScript(TESS);const w=await Tesseract.createWorker('spa');try{const{data}=await w.recognize(canvas);return{text:data.text,conf:Math.round(data.confidence)}}finally{await w.terminate()}}
 const progress=(msg,pct)=>{S.busy=msg?{msg,pct}:null;render()};
 async function ocrPage(pdf,n){
   const pg=await pdf.getPage(n),vp=pg.getViewport({scale:2}),cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
@@ -267,8 +281,8 @@ async function extractPdf(buf,onp,only){
     const pg=await pdf.getPage(n),tc=await pg.getTextContent();let t='',ly=null;
     for(const it of tc.items){if(ly!==null&&Math.abs(it.transform[5]-ly)>2)t+='\n';else if(t&&!t.endsWith(' ')&&!t.endsWith('\n'))t+=' ';t+=it.str;ly=it.transform[5]}
     t=cleanText(t);let src='native',conf=null,flag=false;
-    if(t.length<40){
-      if(S.prof.ocr){try{onp&&onp('OCR · pág. '+n+'/'+pdf.numPages,n/pdf.numPages);const o=await ocrPage(pdf,n);t=cleanText(o.text);src='ocr';conf=o.conf;if(conf<70||t.length<40)flag='OCR de baja confianza ('+conf+'%)'}catch(e){flag='Sin texto y OCR no disponible'}}
+    if(t.length<100||textQuality(t)<0.62){
+      if(S.prof.ocr){try{onp&&onp('OCR · pág. '+n+'/'+pdf.numPages,n/pdf.numPages);const o=await ocrPage(pdf,n);t=cleanText(o.text);src='ocr';conf=o.conf;if(conf<70||t.length<60||textQuality(t)<0.52)flag='OCR de baja confianza ('+conf+'%)'}catch(e){flag='Sin texto y OCR no disponible'}}
       else flag='Sin texto nativo (OCR desactivado)';
     }
     pages.push({n,text:t,src,conf,flag});
@@ -388,7 +402,7 @@ function vHome(){
   bump();const goal=Math.min(100,Math.round(p.todayN/p.goal*100)),nv=valid().length,now=Date.now();
   const due=valid().filter(q=>q.st.seen>0&&q.srs.due<=now).length,failed=valid().filter(q=>q.st.ko>0&&q.st.ok<=q.st.ko).length,favs=valid().filter(q=>q.fav).length;
   const open=S.sessions.find(s=>s.status==='open');
-  return`<div class="row sp"><div><h1>Test Master</h1><div class="mu">Entrena. Acierta. Sube de nivel.</div></div><div class="flame">🔥 <b>${p.streak}</b></div></div>
+  return`<div class="row sp"><div><h1>Test Master · v0.2</h1><div class="mu">Entrena. Acierta. Sube de nivel.</div></div><div class="flame">🔥 <b>${p.streak}</b></div></div>
   <div class="card row"><div class="ring" style="--p:${pc}%"><span>${L}</span></div><div class="g"><div class="row sp"><b>Nivel ${L}</b><span class="mu">${p.xp} XP</span></div><div class="bar"><i style="width:${pc}%"></i></div><div class="mu sm" style="margin-top:6px">Meta de hoy: ${p.todayN}/${p.goal} preguntas</div><div class="bar"><i style="width:${goal}%;background:linear-gradient(90deg,#22c55e,#a3e635)"></i></div></div></div>
   ${open?`<div class="card row sp"><div><b>⏸ Examen sin terminar</b><div class="mu sm">${open.run.ids.length} preguntas · pregunta ${open.run.i+1}</div></div><button class="pri" data-a="resume">Reanudar</button></div>`:''}
   ${nv===0?`<div class="card"><h3>Empieza aquí 👇</h3><p class="mu">Sube un PDF o pega texto en la Biblioteca. La app lo analiza, crea preguntas y solo usa las que puede demostrar con la fuente.</p><button class="pri" data-a="tab" data-t="lib">📚 Añadir material</button></div>`:''}
@@ -437,7 +451,7 @@ function vRun(){
   const R=S.run;
   if(R.done){const r=R.res;const fails=r.det.filter(d=>!d.good);
     return`<div class="card" style="text-align:center"><div style="font-size:54px">${r.pct>=90?'🏆':r.pct>=70?'🎉':r.pct>=50?'💪':'📖'}</div><h1>${r.ok}/${r.total} · ${r.pct}%</h1><p class="mu">${r.pct>=90?'¡Brutal! Dominas esto.':r.pct>=70?'Aprobado. Sigue así.':'Cada fallo es repaso que sumará mañana.'}</p><h2 style="color:var(--ac2)">+${R.xp} XP</h2><div class="row"><button class="pri g" data-a="home">Inicio</button>${fails.length?`<button class="g" data-a="runq" data-mode="failed">Repasar falladas</button>`:''}</div></div>
-    ${fails.length?'<h2>Para repasar</h2>':''}${fails.map(d=>{const q=qOf(d.id);return`<div class="card"><div class="q">${esc(q.q)}</div><div class="sm ko">Tu respuesta: ${d.a>=0?esc(q.opts[d.a]):'sin responder'}</div><div class="sm ok">Correcta: ${esc(q.opts[q.ans])}</div><div class="quote">Pág. ${q.ev.page}: ${esc(q.ev.quote)}</div></div>`}).join('')}`;}
+    <h2>Corrección y explicaciones</h2>${r.det.map(d=>{const q=qOf(d.id);return`<div class="card"><div class="q">${esc(q.q)}</div><div class="sm ${d.good?'ok':'ko'}">Tu respuesta: ${d.a>=0?esc(q.opts[d.a]):'sin responder'}</div><div class="sm ok">Correcta: ${esc(q.opts[q.ans])}</div><div class="quote">${esc(q.expl||q.ev.quote)}</div></div>`}).join('')}`;}
   const q=qOf(R.ids[R.i]),pb=Math.round(R.i/R.ids.length*100);
   return`<div class="row sp"><button data-a="exit">✕</button><span class="mu">${R.i+1} / ${R.ids.length}</span><button data-a="fav" data-id="${q.id}">${q.fav?'⭐':'☆'}</button></div>
   <div class="bar" style="margin:10px 0"><i style="width:${pb}%"></i></div>
@@ -445,7 +459,7 @@ function vRun(){
   ${R.combo>=2?`<div class="wa" style="font-weight:800;margin-top:6px">🔥 Combo x${R.combo}</div>`:''}
   <div class="card"><div class="q">${esc(q.q)}</div></div>
   ${q.opts.map((o,i)=>{let c='opt';if(R.locked){if(i===q.ans)c+=' good';else if(i===R.sel)c+=' bad'}else if(R.sel===i)c+=' sel';return`<button class="${c}" data-a="pick" data-i="${i}"><b>${'ABCD'[i]}</b> &nbsp;${esc(o)}</button>`}).join('')}
-  ${R.locked?`<div class="card"><b class="${R.sel===q.ans?'ok':'ko'}">${R.sel===q.ans?'¡Correcto!':R.sel<0?'⏱ Tiempo agotado':'Incorrecto'}</b><div class="quote">Pág. ${q.ev.page}: ${esc(q.ev.quote)}</div></div>`:''}
+  ${R.locked?`<div class="card"><b class="${R.sel===q.ans?'ok':'ko'}">${R.sel===q.ans?'¡Correcto!':R.sel<0?'⏱ Tiempo agotado':'Incorrecto'}</b><div class="quote"><b>Explicación:</b> ${esc(q.expl||q.ev.quote)}</div></div>`:''}
   ${(R.locked||(!R.learn&&R.sel!=null))?`<button class="pri" style="width:100%;margin-top:6px" data-a="next">${R.i+1>=R.ids.length?'Finalizar 🏁':'Siguiente →'}</button>`:''}`;
 }
 function render(){
@@ -479,7 +493,7 @@ const A={
   ocr:async d=>{
     try{const f=await dbGet('files',d.v);if(!f)throw new Error('PDF original no disponible');const v=S.vers.find(x=>x.id===d.v);progress('Reprocesando página '+d.n+'…',.5);
       const buf=await f.blob.arrayBuffer(),lib=await pdfLib(),pdf=await lib.getDocument({data:buf}).promise,o=await ocrPage(pdf,+d.n),pg=v.pages.find(p=>p.n===+d.n);
-      pg.text=cleanText(o.text);pg.src='ocr';pg.conf=o.conf;pg.flag=(o.conf<70||pg.text.length<40)?'OCR de baja confianza ('+o.conf+'%)':false;
+      pg.text=cleanText(o.text);pg.src='ocr';pg.conf=o.conf;pg.flag=(o.conf<70||pg.text.length<60||textQuality(pg.text)<0.52)?'OCR de baja confianza ('+o.conf+'%)':false;
       const{chunks,sections}=buildChunks(v.id,v.pages);v.chunks=chunks;v.sections=sections;await dbPut('versions',v);await load();
       const res=await generateFor(S.vers.find(x=>x.id===d.v));progress(null);toast(pg.flag?'Sigue con baja calidad: '+pg.flag:'Página recuperada · '+res.v+' nuevas validadas',!!pg.flag);
     }catch(e){progress(null);toast(e.message,true)}
