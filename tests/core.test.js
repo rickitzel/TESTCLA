@@ -1,12 +1,12 @@
 // Pruebas del núcleo (generador, verificador, repaso espaciado, selección de examen).
-// El núcleo vive dentro de index.html entre //CORE-START y //CORE-END; se carga sin navegador.
+// El núcleo vive dentro de core.js entre //CORE-START y //CORE-END; se carga sin navegador.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const core = html.split('//CORE-START')[1].split('//CORE-END')[0];
+const html = fs.readFileSync(path.join(__dirname, '..', 'core.js'), 'utf8');
+const core = html;
 const T = new Function(core + ';return {uid,norm,genQuestions,verifyQ,buildChunks,txtPages,pickExam,rng,srsUpdate,levelOf,jacc,INTERVALS}')();
 
 const TEXTO = `TÍTULO I. DISPOSICIONES GENERALES

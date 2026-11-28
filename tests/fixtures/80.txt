@@ -1,0 +1,484 @@
+TESTCLAU V1
+TOTAL_PREGUNTAS: 80
+1. Documento 80 pregunta numero 1
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+2. Documento 80 pregunta numero 2
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+3. Documento 80 pregunta numero 3
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+4. Documento 80 pregunta numero 4
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+5. Documento 80 pregunta numero 5
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+6. Documento 80 pregunta numero 6
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+7. Documento 80 pregunta numero 7
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+8. Documento 80 pregunta numero 8
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+9. Documento 80 pregunta numero 9
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+10. Documento 80 pregunta numero 10
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+11. Documento 80 pregunta numero 11
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+12. Documento 80 pregunta numero 12
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+13. Documento 80 pregunta numero 13
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+14. Documento 80 pregunta numero 14
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+15. Documento 80 pregunta numero 15
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+16. Documento 80 pregunta numero 16
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+17. Documento 80 pregunta numero 17
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+18. Documento 80 pregunta numero 18
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+19. Documento 80 pregunta numero 19
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+20. Documento 80 pregunta numero 20
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+21. Documento 80 pregunta numero 21
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+22. Documento 80 pregunta numero 22
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+23. Documento 80 pregunta numero 23
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+24. Documento 80 pregunta numero 24
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+25. Documento 80 pregunta numero 25
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+26. Documento 80 pregunta numero 26
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+27. Documento 80 pregunta numero 27
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+28. Documento 80 pregunta numero 28
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+29. Documento 80 pregunta numero 29
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+30. Documento 80 pregunta numero 30
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+31. Documento 80 pregunta numero 31
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+32. Documento 80 pregunta numero 32
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+33. Documento 80 pregunta numero 33
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+34. Documento 80 pregunta numero 34
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+35. Documento 80 pregunta numero 35
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+36. Documento 80 pregunta numero 36
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+37. Documento 80 pregunta numero 37
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+38. Documento 80 pregunta numero 38
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+39. Documento 80 pregunta numero 39
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+40. Documento 80 pregunta numero 40
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+41. Documento 80 pregunta numero 41
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+42. Documento 80 pregunta numero 42
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+43. Documento 80 pregunta numero 43
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+44. Documento 80 pregunta numero 44
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+45. Documento 80 pregunta numero 45
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+46. Documento 80 pregunta numero 46
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+47. Documento 80 pregunta numero 47
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+48. Documento 80 pregunta numero 48
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+49. Documento 80 pregunta numero 49
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+50. Documento 80 pregunta numero 50
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+51. Documento 80 pregunta numero 51
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+52. Documento 80 pregunta numero 52
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+53. Documento 80 pregunta numero 53
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+54. Documento 80 pregunta numero 54
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+55. Documento 80 pregunta numero 55
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+56. Documento 80 pregunta numero 56
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+57. Documento 80 pregunta numero 57
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+58. Documento 80 pregunta numero 58
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+59. Documento 80 pregunta numero 59
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+60. Documento 80 pregunta numero 60
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+61. Documento 80 pregunta numero 61
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+62. Documento 80 pregunta numero 62
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+63. Documento 80 pregunta numero 63
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+64. Documento 80 pregunta numero 64
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+65. Documento 80 pregunta numero 65
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+66. Documento 80 pregunta numero 66
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+67. Documento 80 pregunta numero 67
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+68. Documento 80 pregunta numero 68
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+69. Documento 80 pregunta numero 69
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+70. Documento 80 pregunta numero 70
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+71. Documento 80 pregunta numero 71
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+72. Documento 80 pregunta numero 72
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+73. Documento 80 pregunta numero 73
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+74. Documento 80 pregunta numero 74
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+75. Documento 80 pregunta numero 75
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+76. Documento 80 pregunta numero 76
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+77. Documento 80 pregunta numero 77
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+78. Documento 80 pregunta numero 78
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+79. Documento 80 pregunta numero 79
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+80. Documento 80 pregunta numero 80
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+INICIO_RESPUESTAS
+1=A
+2=B
+3=C
+4=D
+5=A
+6=B
+7=C
+8=D
+9=A
+10=B
+11=C
+12=D
+13=A
+14=B
+15=C
+16=D
+17=A
+18=B
+19=C
+20=D
+21=A
+22=B
+23=C
+24=D
+25=A
+26=B
+27=C
+28=D
+29=A
+30=B
+31=C
+32=D
+33=A
+34=B
+35=C
+36=D
+37=A
+38=B
+39=C
+40=D
+41=A
+42=B
+43=C
+44=D
+45=A
+46=B
+47=C
+48=D
+49=A
+50=B
+51=C
+52=D
+53=A
+54=B
+55=C
+56=D
+57=A
+58=B
+59=C
+60=D
+61=A
+62=B
+63=C
+64=D
+65=A
+66=B
+67=C
+68=D
+69=A
+70=B
+71=C
+72=D
+73=A
+74=B
+75=C
+76=D
+77=A
+78=B
+79=C
+80=D
+FIN_RESPUESTAS

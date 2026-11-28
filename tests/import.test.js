@@ -1,0 +1,12 @@
+const test=require('node:test'), assert=require('node:assert/strict'),fs=require('node:fs');
+const html=fs.readFileSync(require('node:path').join(__dirname,'../core.js'),'utf8');
+const {parseProvidedExam,parseExamJSON}=new Function(html+';return {parseProvidedExam,parseExamJSON}')();
+const q=n=>`${n}. Pregunta ${n}\nA) Alfa\nB) Beta\nC) Gamma\nD) Delta`;
+const parse=t=>parseProvidedExam([{n:1,text:t}]);
+for(const n of [10,50,80,100,200,1000])test('importa '+n+' preguntas',()=>{const a=parse('TESTCLAU V1\nTOTAL_PREGUNTAS: '+n+'\n'+Array.from({length:n},(_,i)=>q(i+1)).join('\n')+'\nINICIO_RESPUESTAS\n'+Array.from({length:n},(_,i)=>`${i+1}=B`).join('\n')+'\nFIN_RESPUESTAS');assert.equal(a.length,n);assert.ok(a.every(x=>x.state==='validated'&&x.ans===1))});
+test('formatos de clave antiguos',()=>{const a=parse([q(1),q(2),q(3),q(4),'Plantilla de respuestas','1 B 2. C 3-D 4=A'].join('\n'));assert.deepEqual(a.map(x=>x.ans),[1,2,3,0])});
+test('clave ausente no inventa A',()=>assert.equal(parse(q(1))[0].ans,null));
+test('claves contradictorias',()=>assert.equal(parse(q(1)+'\nRespuestas\n1=A\n1=B')[0].state,'needs_review'));
+test('opción ausente se conserva',()=>assert.equal(parse('1. Pregunta\nA) Alfa\nB) Beta\nD) Delta\nRespuestas\n1=B')[0].state,'needs_review'));
+test('total incorrecto bloquea importación',()=>assert.throws(()=>parse('TOTAL_PREGUNTAS: 2\n'+q(1))));
+test('JSON oficial',()=>{const d={formato:'TESTCLAU',version:1,total_preguntas:1,preguntas:[{id:1,pregunta:'Pregunta',opciones:{A:'Alfa',B:'Beta',C:'Gamma',D:'Delta'},correcta:'C'}]};assert.equal(parseExamJSON(JSON.stringify(d))[0].ans,2);d.total_preguntas=2;assert.throws(()=>parseExamJSON(JSON.stringify(d)))});

@@ -1,0 +1,64 @@
+TESTCLAU V1
+TOTAL_PREGUNTAS: 10
+1. Documento 10 pregunta numero 1
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+2. Documento 10 pregunta numero 2
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+3. Documento 10 pregunta numero 3
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+4. Documento 10 pregunta numero 4
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+5. Documento 10 pregunta numero 5
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+6. Documento 10 pregunta numero 6
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+7. Documento 10 pregunta numero 7
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+8. Documento 10 pregunta numero 8
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+9. Documento 10 pregunta numero 9
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+10. Documento 10 pregunta numero 10
+A) Alfa
+B) Beta
+C) Gamma
+D) Delta
+INICIO_RESPUESTAS
+1=A
+2=B
+3=C
+4=D
+5=A
+6=B
+7=C
+8=D
+9=A
+10=B
+FIN_RESPUESTAS

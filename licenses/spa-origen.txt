@@ -1,0 +1,6 @@
+Modelo español incluido en vendor/spa.traineddata.gz
+Paquete @tesseract.js-data/spa, versión 1.0.0
+Archivo distribuido: package/4.0.0_best_int/spa.traineddata.gz
+Proyecto de origen: https://github.com/naptha/tessdata
+Licencia del envoltorio npm: MIT (véase spa-paquete.json).
+Datos Tesseract: Apache License 2.0.
