@@ -1,0 +1,8 @@
+Manifiesto, iconos e instalabilidad de Chrome comprobados.
+spa texto y cuatro opciones exactos en PDF escaneado, pendiente de revisión.
+eng texto y cuatro opciones exactos en PDF escaneado, pendiente de revisión.
+spa+eng texto y cuatro opciones exactos en PDF escaneado, pendiente de revisión.
+320 × 640 cinco pantallas sin desbordamiento horizontal.
+390 × 844 cinco pantallas sin desbordamiento horizontal.
+844 × 390 cinco pantallas sin desbordamiento horizontal.
+768 × 1024 cinco pantallas sin desbordamiento horizontal.

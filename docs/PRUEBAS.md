@@ -1,53 +1,29 @@
-# Pruebas
+# Verificación de TESTCLAU 2.2
 
-## Automáticas (en el repositorio)
+27 de noviembre de 2026. Datos sintéticos, Linux, Node 24.22.3 y Python 3.12.14. Los registros RESULTADO_*.txt contienen las salidas de las pruebas. Los archivos de la entrega 2.1 se utilizaron como referencia de actualización.
 
-```bash
-node --test
-```
-Requiere Node 20 o superior y no tiene dependencias. Se ejecutan en GitHub Actions en cada subida, y el despliegue a Pages solo se hace si pasan.
-
-`tests/core.test.js` cubre:
-
-| Prueba | Verifica |
+| Prueba ejecutada | Resultado y alcance |
 |---|---|
-| Estructura del documento | Capítulos, fragmentos y que cada fragmento está en su página |
-| Preguntas generadas válidas | Todas superan los controles críticos y puntúan ≥ 90 |
-| Determinismo | Mismo documento, mismas preguntas |
-| Rechazo de preguntas incorrectas | Respuesta falsa, página inexistente, cita inventada, alternativas repetidas, versión distinta, esquema roto, fragmento inexistente |
-| Duplicados | Se rechazan con el motivo correcto |
-| Distractor válido en el documento | Se rechaza si la sustitución produce una frase que existe en el texto |
-| Páginas dudosas | No generan fragmentos |
-| Importación externa | Cita real → pendiente de revisión; cita falsa → rechazada |
-| Concordancia de unidades | Sin «2 año» ni «1 años» en los distractores |
-| Repaso espaciado | Sube y reinicia cajas, fechas correctas |
-| Selección de examen | Sin repetidos, nunca más de lo pedido, reparto por páginas |
-| Nivel | Progresión de niveles |
+| Núcleo y flujos | Las 47 regresiones originales y tres nuevas superadas. Las tres nuevas cubren repetición del recibo de respuesta, intersección de filtros y exclusión de flashcards reveladas de XP y aciertos. Parte de estos casos usa un doble de almacenamiento. |
+| Equivalencia de formatos | En Chromium se importaron PDF de texto, TXT y JSON de 10, 50, 80, 100 y 200 preguntas. Se compararon todos los enunciados, alternativas y claves. También se repitió el ensayo independiente de motores en Node. |
+| OCR sin servidor | Tres exámenes PDF compuestos exclusivamente por una imagen. Se probaron español, inglés y ambos juntos. El texto español de prueba incluía «señal», «presión», «ángulo», «Avión», «Hélice» y «Válvula». Se exigió coincidencia exacta de enunciado y cuatro alternativas, y estado pendiente de revisión. |
+| Volumen | Importación y escritura de 1.000 y 10.000 preguntas en IndexedDB real con emulación táctil de 390 × 844. Los tiempos y el heap observado se registran en RESULTADO_browser.txt. El heap es una lectura puntual del proceso de navegador. |
+| Sesiones | Respuestas barajadas y corrección diferida. Recarga inmediata tras pulsar una respuesta, reanudación y calificación de diez preguntas. |
+| Integridad | PDF y JSON dañados, cancelación de una importación conflictiva, descarga de una copia, vaciado de los datos sintéticos y restauración del banco completo. Recuperación desde papelera y diagnóstico. |
+| Actualización y vuelta atrás | V2 CORE → 2.2 → V2 CORE y 2.1 → 2.2 → 2.1, sustituyendo recursos bajo el mismo origen. Se verificaron identidades de preguntas. En V2 CORE se descargó y volvió a seleccionar la copia previa a migrar. En 2.1 se conservó una sesión con respuesta ya puntuada. |
+| Red desconectada | Tras precargar, se detuvo el servidor y se desactivó la red del contexto. Se ejercitaron navegación, estudio, los tres importadores, OCR y restauración. Durante la descarga del archivo local se mantuvo apagado el servidor y se bloquearon las solicitudes HTTP(S); se reactivó el modo offline de CDP para restaurar. El recorrido comprueba que no hubo solicitudes a terceros. |
+| Interfaz móvil | Inicio, Biblioteca, Revisar, Progreso y Más en 320 × 640, 390 × 844, 844 × 390 y 768 × 1024. Encabezados visibles y ausencia de desplazamiento horizontal en estas vistas. |
+| PWA | El navegador leyó el manifiesto, instaló y activó el service worker y devolvió cero errores de instalabilidad. La recarga y los modelos OCR funcionaron después de detener el servidor. |
 
-## Manuales / de extremo a extremo
+**Pendiente en dispositivos.** No hubo teléfono físico Android o iOS. Falta confirmar el alta del icono en el lanzador del sistema, apertura desde ese icono, uso de VoiceOver/TalkBack, rendimiento y memoria en hardware móvil y variaciones del OCR con escaneos reales. La comprobación de instalabilidad del navegador sí se ejecutó. La prueba de instalación de escritorio mediante PWA.install no se completó: Chrome Headless Shell no implementa ese comando y el Chrome completo no pudo abrir el socket local de su perfil en este entorno. Se conserva el guion para un equipo compatible. El PDF original que motivó el encargo tampoco estaba disponible.
 
-Se realizaron con Chrome automatizado en vista móvil de 390 px, y **no** están automatizados en este repositorio. Para repetirlas a mano:
+## Repetición en un entorno de desarrollo
 
-1. Biblioteca → *Pegar texto* con un temario de varias frases con plazos y enumeraciones → debe indicar preguntas validadas.
-2. Pegar el mismo texto otra vez → «idéntico, ya procesado».
-3. Inicio → *Simulacro de 40* con menos de 40 preguntas → debe avisar y ofrecer reducir o añadir material, sin inventar preguntas.
-4. Completar un examen → resultado con XP y lista de falladas con cita y página.
-5. Modo aprendizaje → feedback inmediato; ✕ → *Salir* → *Reanudar* continúa en la misma pregunta.
-6. Subir un PDF con una página en blanco → esa página queda marcada «en revisión» y no genera preguntas.
-7. Más → *Informe de auditoría* y *Exportar* → archivo con `format: "testmaster-v1"` y `sha256`.
-8. Comprobar en Application → Service Workers que `sw.js` está activo y que, sin conexión, la app abre.
+Estas herramientas solo son necesarias para las pruebas. La aplicación distribuida ya contiene sus dependencias.
 
-Resultado en la última ejecución: todos los pasos correctos, sin errores de JavaScript en consola. El paso 6 se ejecutó con una copia local de pdf.js (el CDN no era accesible desde el entorno de desarrollo).
-
-## Lo que NO está verificado
-
-- **OCR (Tesseract.js)** sobre escaneados reales.
-- **pdf.js desde su CDN** (versión 3.11.174) en un navegador conectado.
-- **Android e iPhone físicos**, instalación como app y comportamiento de IndexedDB bajo presión de almacenamiento.
-- **Restauración real de copias** y fusión de copias en conflicto entre dos dispositivos.
-- **Acceso entre usuarios, RLS, cuotas de API**: no aplican en modo local.
-- Documentos de prueba con tablas, documentos contradictorios, información insuficiente y errores de OCR (apartado 16 del Anexo): **pendiente de crear**.
-
-## Cómo añadir pruebas
-
-Los casos nuevos van en `tests/*.test.js`. El núcleo se carga con la misma técnica de `core.test.js`: se extrae el texto entre `//CORE-START` y `//CORE-END` y se evalúa con `new Function`. Cualquier función que deba probarse sin navegador debe vivir dentro de ese bloque y no depender de `document` ni de IndexedDB.
+- Ejecutar `npm test` en la raíz del código.
+- Ejecutar `node tests/engines.mjs` con Node 24 y el adaptador @napi-rs/canvas instalado en el entorno de desarrollo.
+- Para los guiones del navegador, instalar playwright, pillow y reportlab en Python. Indicar en CHROMIUM la ruta absoluta al ejecutable real. Si el lanzador de la distribución carece de binario, utilizar Chrome Headless Shell para pruebas. En esta entrega se ejecutó la versión 151.0.7922.34 obtenida con `npx @puppeteer/browsers install chrome-headless-shell@151.0.7922.34 --path ./qa-browser`. También se ejercitó Chromium 158.0.8127.0. La carpeta temporal del proceso debe existir y ser escribible.
+- Ejecutar `python tests/browser.py` y `python tests/mobile_browser.py`. Ambos crean un origen y un perfil aislados. Los bancos, copias y vaciados pertenecen únicamente a ese perfil.
+- Ejecutar dos veces `python tests/update_browser.py ARCHIVO.zip`, pasando primero TESTCLAU_V2_CORE.zip y después TESTCLAU_2.1.zip.
+- Para comprobar el alta real de la PWA en escritorio, definir CHROMIUM como la ruta a una instalación completa de Chrome compatible y ejecutar `python tests/pwa_browser.py`. El guion usa un perfil temporal. Se considera superado solo si imprime la comprobación de ventana standalone y termina con código cero.

@@ -1,0 +1,65 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> testclau@2.2.0 test
+> node --test
+
+✔ el documento se divide en capítulos, fragmentos y páginas (3.431938ms)
+✔ las preguntas generadas superan todos los controles críticos (6.777415ms)
+✔ el generador es determinista para un mismo documento (2.717543ms)
+✔ rechaza preguntas incorrectas aunque estén bien formadas (1.840942ms)
+✔ rechaza preguntas duplicadas (0.945674ms)
+✔ rechaza un distractor que también sería correcto según el documento (0.319802ms)
+✔ páginas marcadas como dudosas no generan fragmentos ni preguntas (0.179681ms)
+✔ importación externa: cita real queda pendiente de revisión humana, cita falsa se rechaza (0.982479ms)
+✔ los distractores numéricos concuerdan en singular/plural (0.667294ms)
+✔ repaso espaciado: acertar sube de caja y fallar la reinicia (0.319952ms)
+✔ el examen nunca supera lo pedido ni repite preguntas, y reparte por páginas (0.543379ms)
+✔ nivel de usuario crece con la experiencia (0.124898ms)
+✔ importa 10 preguntas (3.132958ms)
+✔ importa 50 preguntas (1.59379ms)
+✔ importa 80 preguntas (1.144754ms)
+✔ importa 100 preguntas (2.13186ms)
+✔ importa 200 preguntas (2.064359ms)
+✔ importa 1000 preguntas (9.158701ms)
+✔ formatos de clave antiguos (0.941518ms)
+✔ clave ausente no inventa A (0.182324ms)
+✔ claves contradictorias (0.213612ms)
+✔ opción ausente se conserva (0.367634ms)
+✔ total incorrecto bloquea importación (0.38504ms)
+✔ JSON oficial (0.336917ms)
+✔ deduplicación y conflicto conservan preguntas y claves separadas (7.248084ms)
+✔ dos claves explícitas y opción no válida mantienen pendiente (4.314787ms)
+✔ explicaciones multilínea y contradictorias (2.796892ms)
+✔ claves JSON de tipo incorrecto no se aceptan (3.538568ms)
+✔ análisis e indexación de bancos grandes (443.80036ms)
+ℹ 1000 preguntas, proceso Node con almacenamiento de prueba: 36 ms; heap final del proceso 16 MiB
+ℹ 10000 preguntas, proceso Node con almacenamiento de prueba: 404 ms; heap final del proceso 71 MiB
+✔ registro de examen atómico bajo fallo de escritura (2.728359ms)
+✔ simulacro con opciones barajadas, sesión recuperada y resultado histórico (9.452134ms)
+✔ reanudar corrección inmediata conserva bloqueo y XP (3.568043ms)
+✔ repaso de fallo acotado, duda a 1 día y caja máxima (3.629947ms)
+✔ preparación sin evidencia, evidencia parcial y cinco indicadores máximos (2.392753ms)
+✔ copia, cambio de huella y restauración íntegra con estado anterior (90.785703ms)
+✔ migración de registros V1 con copia previa y conservación del historial (6.061989ms)
+✔ papelera y recuperación (2.88228ms)
+✔ caché offline contiene todos los recursos declarados y excluye terceros (2.188836ms)
+✔ copia de un PDF real, restauración y rechazo de un binario alterado (7.323689ms)
+✔ revisar claves y recuperar solo coincidencias inequívocas (5.572602ms)
+✔ simulacro de supervivencia termina al fallar, pregunta nueva y olvidada (3.618569ms)
+✔ las cinco pantallas y la corrección se renderizan con texto escapado (16.709483ms)
+✔ pérdida de cuota en restauración conserva todos los registros (2.924444ms)
+✔ vista previa del worker conserva filas reparables y explica numeración incorrecta (2.884454ms)
+✔ huella de copia V1 aceptada y referencia huérfana rechazada antes de restaurar (5.159449ms)
+✔ prueba de ciclo de caché: instalación, navegación offline y actualización fallida (1.36103ms)
+✔ copia histórica V1 con huella FNV, identificada de forma explícita (11.237373ms)
+✔ 2.2 recupera una respuesta pendiente una sola vez (3.449174ms)
+✔ 2.2 combina filtros de campos y búsqueda (3.5729ms)
+✔ 2.2 las flashcards reveladas quedan fuera de los aciertos y XP (3.637868ms)
+ℹ tests 50
+ℹ suites 0
+ℹ pass 50
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 816.785855

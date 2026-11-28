@@ -1,0 +1,6 @@
+PDF real, TXT y JSON equivalentes: 10
+PDF real, TXT y JSON equivalentes: 50
+PDF real, TXT y JSON equivalentes: 80
+PDF real, TXT y JSON equivalentes: 100
+PDF real, TXT y JSON equivalentes: 200
+PDF escaneado, OCR local: 2 preguntas; confianza del motor 92 ; claves detectadas [ 'A', 'B' ]

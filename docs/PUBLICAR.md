@@ -1,55 +1,21 @@
-# Publicar en GitHub Pages (gratis)
+# Instalación, actualización y recuperación
 
-Las apps instalables en móvil necesitan HTTPS. GitHub Pages lo da gratis. El repositorio incluye un workflow que ejecuta los tests y publica la app automáticamente.
+**Instalación móvil.** Sigue LEEME_PRIMERO.html. El paquete de carga directa TESTCLAU_2.2_WEB.zip contiene index.html en la raíz y todos los recursos para el primer precargado. Tras su instalación, abre el icono y usa Más → Comprobar uso sin conexión. Un ZIP almacenado en el teléfono por sí solo no proporciona el origen HTTPS de una PWA.
 
-## 1. Crear el repositorio
+**Actualizar desde 2.1.** Exporta tus datos y guarda la copia antes de actualizar. Despliega el ZIP web en el mismo sitio y ruta. Cierra las pestañas de 2.1 y abre de nuevo el sitio. La edición 2.2 usa la misma base IndexedDB. Comprueba conteos, una pregunta y una sesión abierta. Para volver a 2.1, exporta los cambios de 2.2 y vuelve a desplegar el ZIP 2.1 en la misma dirección. Cierra todos los clientes antes de reabrir. Las preferencias exclusivas de 2.2 se ignoran en la interfaz anterior.
 
-En github.com → **New repository**. Nombre sugerido: `test-master`. Para usar Pages gratis, el repositorio debe ser **público** (los privados requieren un plan de pago).
+**Prueba aislada.** Ejecuta `python3 iniciar.py` desde la carpeta del ZIP. El servidor escucha solo en el equipo local. La dirección de pruebas es http://127.0.0.1:8765/. Para la ruta histórica de desarrollo, `npm start` sirve la carpeta en el puerto 8000. Abre el nombre de host exacto de tu instalación. El navegador distingue localhost de 127.0.0.1.
 
-## 2. Subir los archivos
+**Alojamiento estático.** Copia index.html, los archivos JS de la raíz, manifest.webmanifest, los tres iconos y todo vendor/ bajo el mismo directorio. Conserva LICENSE y licenses/. Usa HTTPS y tipos MIME adecuados para .mjs, .js y .wasm. Sirve sw.js con revalidación. La carpeta tests/ contiene los ejemplos y pruebas y se puede conservar en el paquete local. Este ZIP carece de pasos de publicación automáticos.
 
-### Opción A: línea de comandos (recomendada)
-Desde la carpeta del proyecto:
+**Primera instalación.** Abre el sitio con conexión a su servidor y espera a que Más → Diagnóstico local muestre offline igual a true. En un navegador compatible puedes elegir Instalar o Añadir a la pantalla de inicio. El precargado incluye modelo, fuentes, mapas y motores. El rendimiento y la cuota disponible dependen del dispositivo.
 
-```bash
-git init
-git add .
-git commit -m "Test Master 0.1.0"
-git branch -M main
-git remote add origin https://github.com/TU_USUARIO/test-master.git
-git push -u origin main
-```
+**Actualizar desde V2 CORE.** Guarda el ZIP anterior y exporta la copia V1 desde la app anterior. Esa copia histórica excluye los PDF: conserva también los archivos originales por separado. Ensaya primero con una copia sintética en un origen de pruebas. Para conservar IndexedDB en una instalación, despliega todos los recursos juntos bajo el mismo esquema, host, puerto y ruta que antes. Cierra las pestañas de la app y vuelve a abrirla. Comprueba la versión 2.2 en Inicio, los conteos y una sesión guardada. La actualización de la caché espera a que salgan los clientes activos.
 
-### Opción B: desde la web
-*Add file → Upload files* y arrastra **el contenido** de la carpeta (no el ZIP). Comprueba después que existe la carpeta `.github/workflows/`; las carpetas que empiezan por punto a veces no se arrastran desde el explorador de archivos. Si falta, créala con *Add file → Create new file* escribiendo la ruta `.github/workflows/pages.yml` y pegando el contenido.
+**Datos anteriores.** La base sigue llamándose testmaster y se abre con versión física 1. Los registros antiguos se pueden leer sin convertirlos. En Más, Actualizar registros antiguos con copia descarga una copia completa y añade por transacción los identificadores de opción y revisiones ausentes. Guarda el archivo y vuelve a seleccionarlo para verificar la copia antes de migrar. Las claves históricas incoherentes quedan pendientes. Los resultados históricos que nunca guardaron el enunciado solo conservan la información disponible entonces.
 
-## 3. Activar Pages
+**Volver atrás.** Exporta el progreso reciente con 2.2 y guarda esa copia aparte. Cierra la PWA y vuelve a colocar todos los archivos del ZIP anterior en la misma ruta. Abre con conexión al servidor y espera la actualización de sw.js. Si sigues viendo la versión 2.2, en las herramientas de desarrollador cancela solo el registro del service worker de la app y recarga. Conserva IndexedDB. La base anterior puede ignorar carpetas, papelera, imágenes o instantáneas nuevas. Para reconstruir exactamente el estado anterior usa la copia previa a la actualización desde la versión compatible en un perfil de prueba. Las copias de formato testmaster-v2 requieren un lector compatible, disponible en 2.1 y 2.2. Reinstala la edición 2.2 para recuperar el progreso guardado en ella.
 
-En el repositorio: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+**Restaurar en 2.2.** En Más → Importar, elige una copia. La app comprueba formato, huella, relaciones y archivos PDF con huella SHA-256. Revisa los totales y exporta el estado actual (vuelve a seleccionar la copia a restaurar si has salido de la confirmación) antes de confirmar la sustitución. Una restauración correcta reemplaza los siete almacenes en una sola transacción. En caso de fallo se conserva el estado previo.
 
-Después, en la pestaña **Actions**, el workflow *Publicar en GitHub Pages* se ejecuta con cada subida a `main`. Cuando termina en verde, la app queda en:
-
-```
-https://TU_USUARIO.github.io/test-master/
-```
-
-Si el workflow falla en `tests`, el despliegue se detiene; abre el registro para ver qué prueba falló.
-
-## 4. Instalar en el móvil
-
-- **Android (Chrome):** abre la URL → menú ⋮ → *Instalar aplicación*.
-- **iPhone (Safari):** abre la URL → Compartir → *Añadir a pantalla de inicio*.
-
-La primera vez, con conexión, se guardan la app y (al usar un PDF) pdf.js. Después funciona sin conexión.
-
-## Actualizar
-
-Sube cambios a `main`; el sitio se republica solo. El service worker pide primero a la red, así que la siguiente vez que abras la app con conexión verás la versión nueva.
-
-## Alternativas gratuitas
-
-Netlify y Cloudflare Pages: conecta el repositorio sin comando de compilación y carpeta de publicación vacía o `.`. Si usas estas opciones, publica solo los archivos de la app (`index.html`, `sw.js`, `manifest.webmanifest`, `icon-*.png`).
-
-## Datos y privacidad
-
-Todo se guarda en el navegador del dispositivo (IndexedDB). Publicar la app no publica los documentos ni las preguntas de nadie. Cada dispositivo tiene su propia copia; se pasan datos entre ellos con *Más → Exportar / Importar*.
+**Rescate.** Abre la misma dirección con #seguro y recarga. Puedes exportar directamente los almacenes y comprobar integridad. Una copia de rescate de una base dañada puede requerir corrección antes de restaurarla. Evita borrar los datos del sitio al recuperar una caché.

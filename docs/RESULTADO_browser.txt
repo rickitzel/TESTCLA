@@ -1,0 +1,13 @@
+Chromium 151.0.7922.34 390 x 844
+Equivalencia TXT / PDF / JSON 10
+Equivalencia TXT / PDF / JSON 50
+Equivalencia TXT / PDF / JSON 80
+Equivalencia TXT / PDF / JSON 100
+Equivalencia TXT / PDF / JSON 200
+OCR local escaneado, revisión obligatoria
+Archivos dañados y cancelación sin escrituras
+Banco 1000 tiempo 0.24 s · heap observado 14843892
+Banco 10000 tiempo 5.64 s · heap observado 46098017
+Barajado, simulacro, autoguardado, reanudación y corrección
+Copia completa con PDF y restauración tras vaciado de datos sintéticos
+Papelera, diagnóstico, uso sin red y sin solicitudes externas

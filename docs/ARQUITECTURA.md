@@ -1,110 +1,13 @@
-# Arquitectura
+# Arquitectura de la edición 2.2
 
-## Decisión base: local-first, coste cero
+La interfaz estática está en index.html. Los controles llaman a las acciones de import.js, study.js y backup.js. core.js contiene el parser, validación, selección y repaso. parser-worker.js analiza archivos en un worker. PDF.js usa su worker local. El reconocimiento rasteriza la página y ejecuta Tesseract en un worker WebAssembly. Las referencias a los recursos se resuelven respecto a la URL de la aplicación. El visor muestra texto importado escapado.
 
-El Anexo V2 original asumía servidor, base de datos remota y llamadas a Claude. Esta versión cumple el mismo objetivo (preguntas documentalmente fundamentadas) sin infraestructura ni coste:
+Se admiten hasta 32 MiB por examen, 500 páginas PDF y 10.000 preguntas por archivo. La rasterización limita el lienzo a ocho millones de píxeles. El análisis tiene un tiempo máximo de 90 segundos y se comprueba el presupuesto global entre etapas. La escritura del banco es indivisible. Cancelar una operación en curso evita el guardado si aún no ha empezado la confirmación final.
 
-- **PWA de un solo archivo** (`index.html`) más `sw.js` y `manifest.webmanifest`. Una base de código para web, Android e iPhone.
-- **Persistencia en IndexedDB** del navegador. Sin cuentas ni servidor.
-- **Generación sin IA** (reglas deterministas) y **verificación independiente** contra el texto original.
-- Los contratos de datos (`question`, `evidence`, estados) están pensados para poder conectar más adelante un generador con IA y un backend sin rehacer el modelo.
+La app mantiene los almacenes y el nombre de base de V2. En instalaciones nuevas crea índices por versión, documento, estado y fecha donde corresponda. La consulta por identidad de pregunta usa un índice en memoria también disponible con bases originales. La aplicación usa Web Locks cuando el navegador lo ofrece para asegurar un escritor entre pestañas. Las operaciones de usuario se serializan en la interfaz.
 
-Prioridad ante contradicciones (Anexo, apartado 18): seguridad, fidelidad documental, integridad de datos, fiabilidad de preguntas, rendimiento, experiencia de usuario.
+Cada sesión nueva fija enunciado, opciones, clave y orden de presentación. La selección apunta a la opción original, con un identificador estable por opción. Las versiones editadas se conservan en la pregunta. En la corrección inmediata, la respuesta, pregunta y perfil se confirman por transacción. En un simulacro se guardan las opciones al seleccionarlas y los resultados se aplican al terminar. La restauración valida los datos antes de abrir la transacción de sustitución.
 
-## Flujo
+La caché de la PWA se instala como conjunto versionado. Una instalación incompleta rechaza el nuevo service worker. La versión vigente sirve el conjunto local. Las solicitudes de terceros quedan fuera de su alcance. Esta entrega conserva las cachés previas para las sesiones que aún puedan utilizarlas.
 
-```
-Archivo / texto
-   │  SHA-256 ── ¿ya existe? ── sí ─► se reutiliza (0 coste)
-   ▼
-Extracción (texto nativo → OCR solo si hace falta)
-   │  páginas con calidad dudosa ─► marcadas, sin preguntas, reprocesables
-   ▼
-Indexado: capítulos, fragmentos (frases) con página exacta
-   ▼
-GENERADOR  → propone pregunta + 4 alternativas + cita + explicación
-   ▼
-VERIFICADOR (independiente) → controles críticos + puntuación
-   ▼
-validated ──► banco ──► exámenes / repaso espaciado
-pending_validation / needs_review ──► revisión humana
-rejected ──► nunca aparece en un examen
-```
-
-## Núcleo
-
-El núcleo (sin DOM) está entre los marcadores `//CORE-START` y `//CORE-END` de `index.html`, y se prueba con Node sin navegador (`tests/core.test.js`).
-
-### Generador
-Tres tipos de pregunta, siempre ancladas a una frase del documento:
-- **number** – cifras y plazos («30 días»); distractores con concordancia de número.
-- **list** – elementos de una enumeración tras «:».
-- **cloze** – término clave de una frase; distractores del propio vocabulario del documento.
-
-Antes de aceptar un distractor, comprueba que la frase con esa sustitución **no existe** en el documento.
-
-### Verificador
-Controles **críticos** (cualquier fallo rechaza la pregunta):
-
-| Control | Qué comprueba |
-|---|---|
-| `esquema` | Tipos, 4 alternativas, `ans` 0–3, evidencia presente |
-| `version` | La pregunta pertenece a la versión del documento |
-| `pagina_valida` | La página existe y no está marcada como dudosa |
-| `fragmento_en_pagina` | La cita aparece en la página (texto normalizado) |
-| `fragmento_existe` | El fragmento referenciado existe y contiene la cita |
-| `opciones_unicas` | Sin alternativas repetidas |
-| `respuesta_respaldada` | La respuesta correcta aparece en la cita |
-| `distractores_fuera_del_texto` | Ningún distractor aparece en la cita |
-| `distractor_no_valido_en_doc` | Ningún distractor produce una frase existente en el documento |
-| `sin_duplicado` | Similitud (Jaccard) < 0,85 con otras preguntas |
-
-Controles **no críticos** (−10 puntos cada uno): `explicacion_fiel`, `longitud`.
-
-Una pregunta es `validated` solo si no falla ningún crítico **y** puntúa ≥ 90. Una puntuación alta nunca compensa un fallo crítico.
-
-La normalización (`norm`) pasa a minúsculas, elimina tildes y signos y colapsa espacios, para tolerar diferencias inocuas de extracción y conservar el texto original.
-
-### Preguntas externas
-Las preguntas pegadas desde otro chat (`kind: "ext"`) tienen respuesta no demostrable automáticamente, así que quedan en `pending_validation` si su cita existe en la página indicada, y se rechazan si no. Solo se usan en exámenes tras aprobación humana.
-
-## Estado de los requisitos del Anexo V2
-
-Leyenda: ✅ implementado y probado · 🟡 parcial · ⛔ no aplica en modo local · ⏳ pendiente
-
-| § | Requisito | Estado | Notas |
-|---|---|---|---|
-| 1 | Tres niveles de fiabilidad | ✅ | Esquema, verificación de cita, revisión humana |
-| 2 | Motor documental (hash, versiones, índice, fragmentos) | ✅ | Versión de extractor/OCR guardada como texto |
-| 2 | No reprocesar archivos idénticos | ✅ | Probado en e2e |
-| 3 | Texto nativo, OCR solo si hace falta, páginas dudosas | 🟡 | OCR no verificado contra el servidor real |
-| 3 | Tablas como estructuras coherentes | ⏳ | Las tablas se aplanan a texto |
-| 4 | Índice jerárquico | 🟡 | Capítulos detectados por título y páginas; sin conceptos |
-| 4 | 4 modos de distribución | ⏳ | El examen reparte por páginas; sin selector de modo |
-| 5 | Generador y verificador separados | ✅ | |
-| 5 | Verificación semántica con segundo proceso de IA | ⛔ | Sustituida por controles deterministas + revisión humana |
-| 6 | Estados y puntuación 90/100 | ✅ | `needs_review` se usa en casos límite |
-| 7 | Banco persistente, duplicados, estadísticas, versionado | ✅ | Duplicados por similitud léxica, no semántica |
-| 7 | Límites de tokens, cuotas, llamadas | ⛔ | No hay llamadas a IA (tokens y coste = 0) |
-| 8 | Examen de exactamente 40 o aviso | ✅ | Nunca se presenta incompleto como de 40 |
-| 8 | Equilibrio de dificultad | ⏳ | Hay cobertura por página y control de recientes |
-| 9 | Clave de respuestas en servidor | ⛔ | Sin servidor: el modo examen no muestra la respuesta hasta corregir, pero los datos residen en el dispositivo |
-| 10 | RLS, buckets privados, claves | ⛔ | Sin servidor; los datos no salen del dispositivo |
-| 10 | Tablas adicionales | 🟡 | Equivalentes embebidos, ver [ESQUEMA_DATOS.md](ESQUEMA_DATOS.md) |
-| 11 | Copias con integridad | 🟡 | Exporta/importa con SHA-256; **los PDF originales no se incluyen** |
-| 11 | Pruebas periódicas de restauración | ⏳ | |
-| 12 | Sincronización | 🟡 | Manual por archivo; fusión por marca temporal; sin resolución de conflictos explícita |
-| 12 | Exámenes finalizados inmutables | 🟡 | Se guardan como `final`, pero la importación puede sustituirlos si traen una marca más reciente |
-| 13 | Offline | ✅ | Tras la primera carga; PDF y OCR necesitan conexión la primera vez |
-| 14 | Experiencia de usuario | 🟡 | Falta examen por materia/carpeta |
-| 15 | Rendimiento (paginación, carga diferida) | ⏳ | Carga el banco completo en memoria |
-| 16 | Pruebas adicionales | 🟡 | Ver [PRUEBAS.md](PRUEBAS.md) |
-| 17 | Informe de auditoría | ✅ | Documentos, propuestas, validadas, rechazadas, motivos, tiempos, errores |
-
-## Evolución prevista
-
-1. Verificar OCR y carga de pdf.js en dispositivos reales.
-2. Incluir los PDF en las copias y añadir prueba de restauración.
-3. Selector de distribución (equilibrada, proporcional, personalizada, puntos débiles) y equilibrio de dificultad.
-4. Paginación y carga diferida del banco.
-5. Backend opcional (Supabase u otro) para sincronización automática, con generador de IA tras una API propia, nunca desde el navegador.
+La edición 2.2 carga spa, eng o ambos desde la caché local. Antes de puntuar una elección escribe un recibo corto de recuperación en localStorage cuando está disponible. Al reanudar, comprueba sesión, posición e identidad de pregunta. Si IndexedDB ya confirmó la respuesta inmediata, el bloqueo evita volver a puntuarla. Al restaurar o vaciar se descarta el recibo.
