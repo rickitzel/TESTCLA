@@ -1,7 +1,7 @@
 {
-  "name": "Test Master",
-  "short_name": "Test Master",
-  "description": "Entrena tests a partir de tus propios documentos, con preguntas verificadas contra la fuente.",
+  "name": "TESTCLAU",
+  "short_name": "TESTCLAU",
+  "description": "Exámenes de estudio locales con clave documentada y repaso espaciado.",
   "lang": "es",
   "start_url": "./index.html",
   "scope": "./",
@@ -22,5 +22,6 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "id": "./index.html"
 }

@@ -1,3 +1,24 @@
+# Cambios de TESTCLAU
+
+## 2.2.0
+
+- Modelos español e inglés incluidos, con selección de idioma y revisión del texto OCR.
+- Recuperación de una respuesta si se recarga mientras IndexedDB está confirmándola.
+- Descarga explícita de copias. Verificación de la copia externa antes de convertir registros antiguos desde Más.
+- Filtros por campo, dominio por materia en Inicio, descanso, imágenes durante el estudio y reto diario reproducible. Las flashcards reveladas se excluyen de los aciertos evaluados.
+- Instalación y comprobación offline desde Más, aviso de actualización y distribución lista para carga directa.
+- Regresiones en Chromium real sobre IndexedDB, descarga y restauración, OCR, caché y actualizaciones en ambos sentidos.
+
+## 2.1.0 · Entrega de prueba
+
+- Parser en worker para PDF, TXT y JSON, conservación de metadatos, revisión de anomalías, opciones repetidas, claves incompatibles y duplicados.
+- PDF.js 5.6.205, Tesseract.js 7.0.0, núcleo 7.0.0 y modelo inglés empaquetados. El texto reconocido se somete a revisión antes de estudiarlo.
+- Copia completa con PDF, rescate de solo lectura, restauración transaccional, conversión opcional con copia, papelera reversible y consulta de fuente.
+- Corrección diferida de simulacros, reanudación sin doble puntuación, opciones identificadas, instantáneas de sesiones e historial de ediciones.
+- Modos de estudio, selección de preguntas, colecciones de bancos, notas, referencias, imágenes, repaso espaciado configurable y preferencias de accesibilidad.
+- Planificador, indicadores de preparación con evidencia explícita, calendario, evolución, simulacros e informes.
+- Instalación estática sin compilación, lanzador local y pruebas reproducibles con documentos sintéticos.
+
 # Changelog
 
 ## 0.1.0 — primera versión

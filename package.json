@@ -1,7 +1,7 @@
 {
-  "name": "test-master",
-  "version": "0.2.0",
-  "description": "App de tests local y gratuita (PWA) con preguntas verificadas contra el documento original.",
+  "name": "testclau",
+  "version": "2.2.0",
+  "description": "PWA local para importar y estudiar exámenes",
   "private": true,
   "license": "MIT",
   "engines": {
@@ -9,6 +9,6 @@
   },
   "scripts": {
     "test": "node --test",
-    "start": "python3 -m http.server 8000"
+    "start": "python3 -m http.server 8000 --bind 127.0.0.1"
   }
 }

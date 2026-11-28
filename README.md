@@ -1,88 +1,24 @@
-# Test Master
+# TESTCLAU 2.2
 
-App de tests **local, gratuita e instalable** (PWA) que importa preguntas ya redactadas a partir de tus documentos y **solo acepta las que puede demostrar con la fuente**. Funciona en web, Android e iPhone desde una única base de código. Todo se guarda en tu dispositivo: sin servidor, sin cuentas y sin coste de IA.
+Aplicación de estudio de mantenimiento aeronáutico. Importa exámenes, estudia con tus propias claves y conserva el progreso en este navegador. La aplicación se distribuye con código, recursos y modelos OCR en español e inglés.
 
-## Por qué es distinta
+## Empezar sin programar
 
-Una pregunta bien redactada no es una pregunta correcta. Test Master separa tres niveles:
+Abre **LEEME_PRIMERO.html**. Si ya tienes una instalación servida por HTTPS, conserva su dirección y sigue los tres pasos de actualización. Si empiezas desde cero, el paquete **TESTCLAU_2.2_WEB.zip** permite crear el sitio mediante carga directa, sin compilación. En el móvil se instala desde esa dirección con el navegador. La primera carga debe completarse con conexión.
 
-1. **Formato válido** – el esquema de datos se cumple.
-2. **Respuesta convincente** – la pregunta suena bien.
-3. **Respuesta respaldada** – la cita existe en la página indicada y demuestra la respuesta.
+Para el equipo que ya usa el lanzador local, sigue disponible `python3 iniciar.py` (Windows: `py iniciar.py`). Conserva el mismo navegador, nombre de host y puerto. La dirección de pruebas sigue siendo http://127.0.0.1:8765/. El lanzador es opcional en un ordenador.
 
-Solo las preguntas que superan el nivel 3 entran en los exámenes.
+## Primer examen
 
-## Qué hace
+1. Abre **Biblioteca → Importar examen**. Para probarla, selecciona **tests/fixtures/10.json**. El archivo contiene diez preguntas sintéticas de demostración. Hay versiones equivalentes en PDF y TXT.
+2. En **Inicio**, abre el examen y elige corrección inmediata o al final. Para barajar las opciones activa la preferencia en **Más**.
+3. Consulta **Progreso**. Desde **Más → Exportar** descarga una copia externa con documentos, archivos originales disponibles, notas, progreso y sesiones.
 
-- **Documentos:** PDF, TXT o texto pegado. Huella SHA-256, versiones, índice de capítulos, fragmentos con página exacta. Un archivo idéntico no se vuelve a procesar.
-- **Calidad del texto:** texto nativo primero, OCR cuando hace falta, páginas dudosas marcadas y reprocesables, sin preguntas basadas en texto dudoso.
-- **Generador + verificador independientes:** el generador (sin IA, determinista) propone; el verificador comprueba cita, página, versión, respuesta respaldada, distractores y duplicados. Umbral 90/100 **y** todos los controles críticos.
-- **Banco de preguntas persistente** con estados `draft`, `pending_validation`, `validated`, `rejected`, `needs_review`, `archived`.
-- **Exámenes:** simulacro de exactamente 40 preguntas validadas (si no hay suficientes, avisa y no inventa), modo examen y modo aprendizaje, falladas, favoritas, contrarreloj, repaso espaciado y reanudación.
-- **Motivación:** XP, niveles, racha diaria, meta diaria, combos, logros y mapa de dominio por página.
-- **Preguntas desde otro chat:** copias un prompt, pegas el JSON de vuelta, la app comprueba cada cita contra el documento y la respuesta la apruebas tú.
-- **Datos:** copia exportable/importable con comprobación de integridad e informe de auditoría.
+Las preguntas importadas con clave se pueden estudiar directamente. La ficha indica su procedencia. Si el examen presenta dudas, la vista previa permite cancelar, conservar las pendientes o guardar solo las listas. Los escaneos se revisan manualmente. Desde **Revisar** puedes editar y registrar la fuente académica consultada. **Biblioteca → Consultar fuente** muestra el texto extraído y permite descargar el PDF original, si está disponible.
 
-## Probar en local
+En **Más → Ayuda** encontrarás las instrucciones de estudio y la fórmula de preparación. **Más → Diagnóstico local** genera un informe de contadores sin incluir enunciados ni notas. El modo de rescate se abre añadiendo **#seguro** a la dirección y recargando.
 
-```bash
-python3 -m http.server 8000      # o: npx serve .
-# abre http://localhost:8000
-```
-
-También puedes abrir `index.html` directamente. Para PDF, la primera vez necesita conexión (descarga pdf.js, y Tesseract si hay páginas escaneadas); después queda en caché.
-
-## Publicar gratis (GitHub Pages)
-
-Ver [docs/PUBLICAR.md](docs/PUBLICAR.md). Resumen: sube el repositorio, activa Pages con "GitHub Actions" y la app queda en `https://TU_USUARIO.github.io/NOMBRE_REPO/`.
-
-Instalación en el móvil:
-- **Android (Chrome):** menú ⋮ → *Instalar aplicación*.
-- **iPhone (Safari):** Compartir → *Añadir a pantalla de inicio*.
-
-## Tests
-
-```bash
-node --test          # Node 20 o superior, sin dependencias
-```
-
-Detalle en [docs/PRUEBAS.md](docs/PRUEBAS.md).
-
-## Documentación
-
-| Documento | Contenido |
-|---|---|
-| [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) | Decisiones de diseño y estado de cada requisito del Anexo V2 |
-| [docs/ESQUEMA_DATOS.md](docs/ESQUEMA_DATOS.md) | Almacenes de IndexedDB y campos |
-| [docs/PRUEBAS.md](docs/PRUEBAS.md) | Qué se prueba, cómo y qué falta |
-| [docs/PUBLICAR.md](docs/PUBLICAR.md) | Despliegue en GitHub Pages |
-| [CHANGELOG.md](CHANGELOG.md) | Cambios por versión |
-
-## Limitaciones conocidas
-
-Estado honesto de la versión 0.1:
-
-- **OCR de escaneados y carga de pdf.js desde CDN:** implementados pero no verificados contra los servidores reales.
-- **Dispositivos reales:** probada en Chrome de escritorio con tamaño móvil, no en Android/iPhone físicos.
-- **Sincronización** entre dispositivos: manual (exportar/importar), no automática.
-- **Distribuciones de preguntas** personalizada y por puntos débiles, equilibrio explícito de dificultad y paginación: pendientes.
-- **Importación de exámenes:** se reconocen preguntas numeradas con cuatro opciones A-D y clave de respuestas. Los documentos sin esa estructura no generan preguntas automáticamente.
-
-## Licencia
-
-MIT. Ver [LICENSE](LICENSE).
-
-## Actualización 0.2.0
-El fondo azul petróleo permite comprobar que se ha cargado esta versión. Tras contestar en modo aprendizaje se muestra una explicación basada en la cita, y al finalizar un examen se corrigen todas las respuestas. Se intenta OCR también cuando la extracción nativa parece corrupta. **Importante:** no se ha incorporado inteligencia artificial para generar preguntas conceptuales; el generador sigue siendo por reglas. Revisa los resultados OCR y las preguntas antes de estudiar contenidos críticos.
-
-### Subir a GitHub
-Copia los archivos de esta carpeta a la raíz de tu repositorio y confirma los cambios. Activa GitHub Pages desde Settings → Pages, seleccionando Deploy from a branch y la rama main, carpeta /(root). No se ha publicado automáticamente en tu cuenta.
-
-
-## Versión 0.3 — importación fiel de exámenes
-
-- Importa preguntas ya redactadas con cuatro opciones A-D.
-- Conserva numeración, orden y texto de cada alternativa.
-- Lee la plantilla de respuestas y las explicaciones del PDF cuando están disponibles.
-- Las preguntas sin clave quedan pendientes y no entran en los exámenes.
-- No genera preguntas automáticas a partir de frases sueltas.
+- [Informe y limitaciones de la entrega](ENTREGA.md)
+- [Pruebas y reproducción](docs/PRUEBAS.md)
+- [Formato de examen](docs/PROTOCOLO.md)
+- [Cambios](CHANGELOG.md)

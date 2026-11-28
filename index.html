@@ -7,13 +7,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Test Master">
+<meta name="apple-mobile-web-app-title" content="TESTCLAU">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<title>Test Master</title>
+<title>TESTCLAU</title>
 <style>
-:root{--bg:#103d4b;--card:#164e60;--card2:#1b6073;--tx:#eef1ff;--mu:#8e98c4;--ac:#7c5cff;--ac2:#22d3ee;--ok:#22c55e;--ko:#ef4444;--wa:#f59e0b;--r:20px}
+:root{--bg:#103d4b;--card:#164e60;--card2:#1b6073;--tx:#eef1ff;--mu:#c1cce5;--ac:#7c5cff;--ac2:#22d3ee;--ok:#22c55e;--ko:#ef4444;--wa:#f59e0b;--r:20px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#137f9055,transparent),radial-gradient(900px 500px at 110% 10%,#18a99944,transparent),var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100%}
 body{padding:env(safe-area-inset-top) 0 0}
@@ -59,220 +59,29 @@ textarea{min-height:140px}
 .ov{position:fixed;inset:0;background:#103d4bee;display:grid;place-items:center;z-index:40;text-align:center;padding:30px}
 .flame{font-size:26px}
 .badge{display:inline-flex;align-items:center;gap:6px;background:#ffffff12;padding:6px 10px;border-radius:12px;margin:3px;font-size:13px}.badge.off{opacity:.35;filter:grayscale(1)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #ffe086;outline-offset:2px}
+body.large .q,body.large .opt{font-size:1.5rem}body.contrast{--bg:#080d12;--card:#111820;--tx:#fff;--mu:#fff}body.light{--bg:#e4eff0;--card:#fff;--tx:#172a33;--mu:#344b56}body.light .tile,body.light nav,body.light .ring,body.light input,body.light select,body.light textarea{color:white}body.light .quote{color:#243650}body.focus .flame,body.focus .xp,body.focus .cf,body.focus .wa{display:none}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.download{display:inline-block;padding:.65rem 1rem;border-radius:.75rem;color:white;text-decoration:none} .card,.q,.quote{overflow-wrap:anywhere} @media(max-width:420px){nav button{flex:1;min-width:0;padding:6px 2px}.row.wrap{gap:6px}.modal>div{overflow-x:hidden}}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <nav id="nav"></nav>
-<input type="file" id="file" accept=".pdf,.txt,.md,application/pdf,text/plain" multiple hidden>
+<input type="file" id="file" accept=".pdf,.txt,.md,.json,application/pdf,text/plain,application/json" multiple hidden>
 <input type="file" id="imp" accept=".json,application/json" hidden>
+<script src="core.js"></script>
 <script>
-//CORE-START
-const uid=()=>(globalThis.crypto&&crypto.randomUUID?crypto.randomUUID():'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
-const norm=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9%€\s]/g,' ').replace(/\s+/g,' ').trim();
-function rng(seed){let a=seed>>>0||1;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-const shuffle=(arr,r)=>{const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-const toks=s=>new Set(norm(s).split(' ').filter(w=>w.length>2));
-const jacc=(a,b)=>{const A=toks(a),B=toks(b);let i=0;A.forEach(x=>{if(B.has(x))i++});return A.size+B.size-i?i/(A.size+B.size-i):0};
-function cleanText(t){return t.replace(/\r/g,'').replace(/([a-záéíóúñ])-\n([a-záéíóúñ])/g,'$1$2').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim()}
-// Heurística conservadora: detecta texto corrupto antes de crear preguntas.
-function textQuality(t){
-  if(!t||!t.trim())return 0;
-  const letters=(t.match(/[a-záéíóúüñ]/gi)||[]).length;
-  const bad=(t.match(/[�□■]|\(cid:\d+\)/g)||[]).length;
-  const words=t.match(/[a-záéíóúüñ]{2,}/gi)||[];
-  const strange=(t.match(/[^\p{L}\p{N}\s.,;:()¿?¡!%€ºª\-–—/\[\]"'«»]/gu)||[]).length;
-  return Math.max(0,Math.min(1,letters/Math.max(1,t.length)*1.5 -bad*0.12-strange/Math.max(1,t.length)*2+(words.length>=8?0.12:0)));
-}
-function simpleExplanation(sentence,correct,page){
-  const clean=sentence.replace(/\s+/g,' ').trim();
-  const brief=clean.length>210?clean.slice(0,207).replace(/\s+\S*$/,'')+'…':clean;
-  return `Respuesta correcta: ${correct}. Explicación basada en el texto: «${brief}» (página ${page}).`;
-}
-const HEAD=/^(art[ií]culo|cap[ií]tulo|t[ií]tulo|tema|secci[oó]n|anexo|disposici[oó]n)\b.{0,90}$/i;
-function isHeading(l){l=l.trim();return l.length>2&&l.length<=90&&(HEAD.test(l)||(l===l.toUpperCase()&&/[A-ZÁÉÍÓÚÑ]{4}/.test(l)&&!/[.]$/.test(l)))}
-function sentences(t){
-  const p=t.replace(/\b(art|arts|núm|pág|págs|apdo|ap|Sr|Sra|Dr|etc|ej|vs)\.\s/gi,m=>m.replace('.','\u2024')).replace(/(\d)\.(\d)/g,'$1\u2024$2');
-  const m=p.replace(/\s+/g,' ').match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[];
-  return m.map(s=>s.replace(/\u2024/g,'.').trim()).filter(s=>s.length>=40&&s.length<=320);
-}
-function buildChunks(vid,pages){
-  const chunks=[],sections=[];
-  pages.forEach(p=>{
-    if(p.flag)return;let sec='',buf=[];
-    const flush=()=>{sentences(buf.join(' ')).forEach(s=>chunks.push({id:vid+'-'+p.n+'-'+chunks.length,page:p.n,sec,text:s}));buf=[]};
-    p.text.split('\n').forEach(l=>{if(isHeading(l)){flush();sec=l.trim();sections.push({title:sec,page:p.n})}else if(l.trim())buf.push(l.trim())});
-    flush();
-  });
-  return{chunks,sections};
-}
-const _dn=new WeakMap();
-function docNorm(ver){let v=_dn.get(ver);if(!v){v=ver.pages.map(p=>norm(p.text)).join(' ');_dn.set(ver,v)}return v}
-const NUM=/(\d{1,4})\s*(días hábiles|días naturales|días|día|meses|mes|años|año|horas|hora|semanas|semana|euros|%|por ciento|puntos|metros|km|kg)(?![a-záéíóúñ])/i;
-const SG={'día':'día','días':'día','año':'año','años':'año','mes':'mes','meses':'mes','semana':'semana','semanas':'semana','hora':'hora','horas':'hora'},PLU={'día':'días','año':'años','mes':'meses','semana':'semanas','hora':'horas'};
-const inflect=(u,v)=>{const k=SG[u.toLowerCase()];return k?(v===1?k:PLU[k]):u};
-function variantInDoc(docN,sentence,target,rep){
-  const nr=norm(sentence.replace(target,rep)),nrep=norm(rep),i=nr.indexOf(nrep);
-  if(i<0||!nrep)return true;
-  return docN.includes(nr.slice(Math.max(0,i-30),i+nrep.length+30));
-}
-function parseList(t){
-  const i=t.indexOf(':');if(i<10||i>200)return null;
-  const head=t.slice(0,i).trim(),rest=t.slice(i+1).replace(/[.;]\s*$/,'');
-  const raw=rest.split(/\s*[,;]\s*|\s+y\s+/);
-  const items=raw.map(x=>x.replace(/^[a-z0-9]{1,2}[).]\s*/i,'').trim()).filter(x=>x.length>=2&&x.length<=40&&x.split(' ').length<=3);
-  return items.length>=3&&items.length===raw.length?{head,items}:null;
-}
-function genQuestions(ver,max=80){
-  const r=rng(parseInt((ver.hash||'1').slice(0,8),16)||1),docN=docNorm(ver),chunks=ver.chunks;
-  const freq={};chunks.forEach(c=>(c.text.match(/[A-Za-zÁÉÍÓÚÑáéíóúñü]{7,}/g)||[]).forEach(w=>{const k=w.toLowerCase();freq[k]=(freq[k]||0)+1}));
-  const vocab=Object.keys(freq),pool=[];
-  chunks.forEach(c=>{const L=parseList(c.text);if(L)L.items.forEach(i=>pool.push({i,c:c.id}))});
-  const mk=(c,kind,diff,qtext,correct,ds)=>{
-    const opts=shuffle([correct,...ds.slice(0,3)],r);
-    return{id:uid(),vid:ver.id,docId:ver.docId,kind,q:qtext,opts,ans:opts.indexOf(correct),
-      expl:simpleExplanation(c.text,correct,c.page),
-      ev:{vid:ver.id,page:c.page,chunkId:c.id,quote:c.text},diff,meta:{target:correct,sentence:c.text},
-      state:'draft',created:Date.now(),srs:{box:0,due:0},st:{seen:0,ok:0,ko:0,last:0},fav:false};
-  };
-  const tryNum=c=>{
-    const m=c.text.match(NUM);if(!m||c.text.split(m[0]).length!==2)return null;
-    const n=+m[1],inf=!!SG[m[2].toLowerCase()];
-    const cand=[...new Set([n*2,Math.max(1,Math.round(n/2)),n+5,n+10,n+1,Math.max(1,n-5),n*3,n+15,n+2])].filter(v=>v!==n&&v>0&&(inf||v!==1));
-    const ds=[];
-    for(const v of shuffle(cand,r)){const o=String(v)+m[0].slice(m[1].length).replace(m[2],inflect(m[2],v));if(!variantInDoc(docN,c.text,m[0],o))ds.push(o);if(ds.length===3)break}
-    if(ds.length<3)return null;
-    return mk(c,'number','media',`Complete correctamente el texto: «${c.text.replace(m[0],'_____')}»`,m[0],ds);
-  };
-  const tryList=c=>{
-    const L=parseList(c.text);if(!L)return null;
-    const it=shuffle(L.items,r)[0],nt=norm(c.text),wc=it.split(' ').length,sameHead=chunks.filter(x=>norm(x.text).startsWith(norm(L.head).slice(0,25))).map(x=>norm(x.text)).join(' ');
-    const ds=[];
-    for(const p of shuffle(pool.filter(p=>p.c!==c.id&&p.i.split(' ').length===wc),r)){
-      const n=norm(p.i);if(!nt.includes(n)&&!sameHead.includes(n)&&!ds.some(d=>norm(d)===n))ds.push(p.i);if(ds.length===3)break}
-    if(ds.length<3)return null;
-    return mk(c,'list','dificil',`Según el texto, ¿cuál de estos elementos pertenece a la enumeración «${L.head}»?`,it,ds);
-  };
-  const tryCloze=c=>{
-    const ws=(c.text.match(/[A-Za-zÁÉÍÓÚÑáéíóúñü]{8,}/g)||[]).filter(w=>c.text.indexOf(w)>0&&c.text.split(w).length===2);
-    if(!ws.length)return null;
-    const w=shuffle(ws,r)[0],cap=w[0]!==w[0].toLowerCase(),nt=norm(c.text),ds=[];
-    for(const v of shuffle(vocab.filter(v=>Math.abs(v.length-w.length)<=3&&v.slice(0,4)!==w.slice(0,4).toLowerCase()&&!nt.includes(norm(v))),r)){
-      const d=cap?v[0].toUpperCase()+v.slice(1):v;
-      if(!variantInDoc(docN,c.text,w,d))ds.push(d);if(ds.length===3)break}
-    if(ds.length<3)return null;
-    return mk(c,'cloze',(freq[w.toLowerCase()]||1)>2?'facil':'media',`Complete la frase: «${c.text.replace(w,'_____')}»`,w,ds);
-  };
-  const out=[];
-  for(const c of shuffle(chunks,r)){if(out.length>=max)break;const q=tryNum(c)||tryList(c)||tryCloze(c);if(q)out.push(q)}
-  return out;
-}
-
-// Importa exámenes ya redactados: conserva enunciado, orden A-D, clave y explicación.
-function parseProvidedExam(pages){
-  const questions=[];let cur=null,activeOpt=-1,started=false;
-  const flush=()=>{if(cur){cur.q=cur.q.trim();cur.opts=cur.opts.map(x=>x.trim());if(cur.q&&cur.opts.length===4)questions.push(cur);cur=null;activeOpt=-1}};
-  for(const pg of pages){
-    if(!pg||!pg.text)continue;
-    for(const raw of pg.text.split(/\n+/)){
-      const line=raw.replace(/\s+/g,' ').trim();if(!line)continue;
-      if(/^plantilla de respuestas$/i.test(line)){flush();started=true;break}
-      if(started)break;
-      const qm=line.match(/^(\d{1,2})[.)]\s+(.+)$/);
-      const om=line.match(/^([A-D])[).:]\s*(.*)$/i);
-      if(qm){flush();cur={number:+qm[1],q:qm[2],opts:[],page:pg.n};activeOpt=-1;continue}
-      if(cur&&om){const ix='ABCD'.indexOf(om[1].toUpperCase());if(ix===cur.opts.length){cur.opts.push(om[2]);activeOpt=ix}else if(ix<4){while(cur.opts.length<=ix)cur.opts.push('');cur.opts[ix]=om[2];activeOpt=ix}continue}
-      if(cur&&activeOpt>=0&&cur.opts[activeOpt])cur.opts[activeOpt]+=' '+line;
-      else if(cur&&cur.opts.length===0)cur.q+=' '+line;
-    }
-    if(started)break;
-  }
-  flush();
-  const all=pages.filter(Boolean).map(p=>p.text).join('\n');
-  const km=all.match(/(?:^|\n)\s*Plantilla de respuestas\s*(?:\n|$)/i),sm=all.match(/(?:^|\n)\s*Soluciones explicadas\s*(?:\n|$)/i);const keyAt=km?km.index+km[0].lastIndexOf('Plantilla'): -1,solAt=sm?sm.index+sm[0].lastIndexOf('Soluciones'):-1;
-  const keyText=keyAt>=0?all.slice(keyAt,solAt>=0?solAt:undefined):'';
-  const answers={};
-  // La plantilla suele estar maquetada en varias columnas: cada pareja número-letra es independiente.
-  for(const m of keyText.matchAll(/(?:^|\s)(\d{1,2})\s+([A-D])(?=\s|$)/g))answers[+m[1]]=m[2].toUpperCase();
-  const expText=solAt>=0?all.slice(solAt):'';const explanations={};
-  const er=/\n\s*(\d{1,2})[.)]\s*([A-D])\.\s*([\s\S]*?)(?=\n\s*\d{1,2}[.)]\s*[A-D]\.\s*|\n\s*Módulo\s+\d|$)/g;
-  for(const m of expText.matchAll(er))explanations[+m[1]]={letter:m[2],text:m[3].replace(/\s+/g,' ').trim()};
-  return questions.sort((a,b)=>a.number-b.number).map(x=>{
-    const letter=answers[x.number]||'',expl=explanations[x.number];
-    x.opts=x.opts.map(o=>o.replace(/\s+Módulo\s+\d+.*$/i,'').trim());
-    const validKey=/^[A-D]$/.test(letter)&&'ABCD'.indexOf(letter)<x.opts.length;
-    return{id:uid(),vid:null,docId:null,kind:'provided',sourceOrder:x.number,sourceNumber:x.number,q:x.q,opts:x.opts,ans:validKey?'ABCD'.indexOf(letter):0,answerLetter:letter,
-      expl:expl&&expl.text?expl.text.replace(/\s+Preguntas elaboradas a partir del temario aportado[\s\S]*$/i,'').replace(/\s+Módulo\s+\d+.*$/i,'').trim():(validKey?'La respuesta correcta figura en la plantilla del documento.':'Esta pregunta no tiene respuesta en la plantilla; requiere revisión.'),
-      ev:{vid:null,page:x.page,chunkId:null,quote:x.q+' '+x.opts.map((o,i)=>'ABCD'[i]+') '+o).join(' ')},diff:'media',state:validKey?'validated':'needs_review',score:validKey?100:0,checks:[],reasons:validKey?[]:['No aparece en la plantilla de respuestas'],created:Date.now(),srs:{box:0,due:0},st:{seen:0,ok:0,ko:0,last:0},fav:false};
-  });
-}
-async function saveProvidedQuestions(ver,parsed){
-  let ok=0,pending=0;
-  for(const q of parsed){q.vid=ver.id;q.docId=ver.docId;q.ev.vid=ver.id;await dbPut('questions',q);if(q.state==='validated')ok++;else pending++}
-  await audit('job',`Importación de examen: ${parsed.length} preguntas, ${ok} con clave, ${pending} pendientes`,{proposed:parsed.length,validated:ok,rejected:0,pending,ms:0,tokens:0,cost:0});
-  await load();return{total:parsed.length,ok,pending};
-}
-
-function verifyQ(q,ver,others){
-  const ck=[],add=(name,ok,crit,why)=>ck.push({name,ok:!!ok,crit:crit!==false,why:why||name});
-  const fin=()=>{
-    const bad=ck.filter(c=>!c.ok),crit=bad.filter(c=>c.crit),soft=bad.filter(c=>!c.crit);
-    let score=100-soft.length*10-(crit.length?50:0),state;
-    if(!crit.length&&score>=90)state='validated';
-    else if(q&&q.kind==='ext'&&crit.length===1&&crit[0].name==='respuesta_respaldada_humana')state='pending_validation';
-    else state=crit.length?'rejected':'needs_review';
-    return{checks:ck,score,state,reasons:bad.map(b=>b.why)};
-  };
-  const sch=q&&typeof q.q==='string'&&q.q.length>=10&&Array.isArray(q.opts)&&q.opts.length===4&&q.opts.every(o=>typeof o==='string'&&o.trim())&&Number.isInteger(q.ans)&&q.ans>=0&&q.ans<4&&q.ev&&typeof q.ev.quote==='string'&&Number.isInteger(q.ev.page);
-  add('esquema',sch,true,'Esquema de datos inválido');
-  if(!sch)return fin();
-  add('version',q.vid===ver.id,true,'Versión del documento no coincide');
-  const pg=ver.pages.find(p=>p.n===q.ev.page);
-  add('pagina_valida',pg&&!pg.flag,true,'Página inexistente o con calidad dudosa');
-  const pn=pg?norm(pg.text):'',nq=norm(q.ev.quote);
-  add('fragmento_en_pagina',nq.length>=20&&pn.includes(nq),true,'La cita no aparece en la página indicada');
-  if(q.ev.chunkId)add('fragmento_existe',ver.chunks.some(c=>c.id===q.ev.chunkId&&norm(c.text).includes(nq)),true,'Fragmento inexistente');
-  add('opciones_unicas',new Set(q.opts.map(norm)).size===4,true,'Alternativas repetidas');
-  const cor=norm(q.opts[q.ans]);
-  if(q.kind==='ext'){add('respuesta_respaldada_humana',false,true,'Requiere revisión humana')}
-  else{
-    add('respuesta_respaldada',cor&&nq.includes(cor),true,'La respuesta correcta no está respaldada por la cita');
-    add('distractores_fuera_del_texto',q.opts.every((o,i)=>i===q.ans||!nq.includes(norm(o))),true,'Un distractor aparece en la fuente');
-    if(q.kind!=='list'&&q.meta){const dn=docNorm(ver);add('distractor_no_valido_en_doc',q.opts.every((o,i)=>i===q.ans||!variantInDoc(dn,q.meta.sentence,q.meta.target,o)),true,'Un distractor podría ser correcto según el documento')}
-  }
-  add('explicacion_fiel',typeof q.expl==='string'&&q.expl.trim().length>=35,false,'Explicación insuficiente');
-  add('sin_duplicado',!(others||[]).some(o=>o.id!==q.id&&o.state!=='rejected'&&jacc(q.q+' '+q.opts[q.ans],o.q+' '+o.opts[o.ans])>0.85),true,'Pregunta duplicada');
-  add('longitud',q.q.length<=420,false,'Enunciado demasiado largo');
-  return fin();
-}
-const INTERVALS=[0,1,3,7,16,35];
-function srsUpdate(q,ok,now=Date.now()){q.st.seen++;q.st.last=now;if(ok){q.st.ok++;q.srs.box=Math.min(5,q.srs.box+1)}else{q.st.ko++;q.srs.box=0}q.srs.due=now+INTERVALS[q.srs.box]*864e5}
-function pickExam(pool,n,r,now=Date.now()){
-  const sc=new Map(pool.map(q=>[q.id,((q.srs.due<=now&&q.st.seen>0)?3:0)+(q.st.ko>0&&q.st.ok<=q.st.ko?2:0)+(q.st.seen===0?1.5:0)-((now-q.st.last)<3*864e5&&q.st.seen>0?2:0)+r()]));
-  const sorted=pool.slice().sort((a,b)=>sc.get(b.id)-sc.get(a.id)),groups={};
-  sorted.forEach(q=>(groups[q.ev.page]=groups[q.ev.page]||[]).push(q));
-  const keys=shuffle(Object.keys(groups),r),out=[];
-  while(out.length<n&&keys.some(k=>groups[k].length))for(const k of keys)if(groups[k].length&&out.length<n)out.push(groups[k].shift());
-  return shuffle(out,r);
-}
-const levelOf=xp=>Math.floor(Math.sqrt(xp/60))+1;
-function txtPages(text){
-  const t=cleanText(text),paras=t.split(/\n\s*\n/),pages=[];let cur='';
-  paras.forEach(p=>{if(cur.length+p.length>2800&&cur){pages.push(cur);cur=''}cur+=(cur?'\n\n':'')+p});if(cur)pages.push(cur);
-  return pages.map((x,i)=>({n:i+1,text:x,src:'text',conf:null,flag:false}));
-}
-//CORE-END
-
 /* ============ Almacenamiento (IndexedDB, todo local) ============ */
 let db;
 const STORES=['docs','versions','questions','kv','audit','sessions','files'];
-const openDB=()=>new Promise((res,rej)=>{const r=indexedDB.open('testmaster',1);r.onupgradeneeded=()=>STORES.forEach(s=>r.result.createObjectStore(s,{keyPath:'id'}));r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error)});
+const openDB=()=>new Promise((res,rej)=>{const r=indexedDB.open('testmaster',1);r.onupgradeneeded=()=>STORES.forEach(s=>{const store=r.result.createObjectStore(s,{keyPath:'id'});for(const key of ({questions:['vid','docId','state'],versions:['docId','hash'],sessions:['status','ts']}[s]||[]))store.createIndex(key,key)});r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error)});
 const P=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 const st=(s,m)=>db.transaction(s,m||'readonly').objectStore(s);
-const dbAll=s=>P(st(s).getAll()),dbGet=(s,id)=>P(st(s).get(id)),dbPut=(s,o)=>P(st(s,'readwrite').put(o)),dbDel=(s,id)=>P(st(s,'readwrite').delete(id)),dbClear=s=>P(st(s,'readwrite').clear());
+const dbAll=s=>P(st(s).getAll()),dbGet=(s,id)=>P(st(s).get(id)),dbPut=(s,o)=>atomicWrite([s],tx=>tx.objectStore(s).put(o));
 async function sha256(buf){
   if(globalThis.crypto&&crypto.subtle){const h=await crypto.subtle.digest('SHA-256',buf);return[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')}
-  let h=2166136261;const u=new Uint8Array(buf);for(let i=0;i<u.length;i++){h^=u[i];h=Math.imul(h,16777619)}return'fnv'+(h>>>0).toString(16).padStart(8,'0')+u.length;
+  throw Error('SHA-256 requiere HTTPS o localhost');
 }
 async function audit(type,msg,extra){await dbPut('audit',{id:Date.now()+'-'+Math.random().toString(36).slice(2,6),ts:Date.now(),type,msg:String(msg).slice(0,300),...(extra||{})})}
 
@@ -281,71 +90,88 @@ const S={tab:'home',docs:[],vers:[],qs:[],prof:null,run:null,modal:null,busy:nul
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const $=s=>document.querySelector(s);
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const DEF={id:'profile',xp:0,streak:0,best:0,lastDay:'',todayDay:'',todayN:0,exams:0,correct:0,answered:0,perfect:0,sound:true,ocr:true,goal:20};
+const DEF={id:'profile',xp:0,streak:0,best:0,lastDay:'',todayDay:'',todayN:0,exams:0,correct:0,answered:0,perfect:0,vibrate:false,sound:false,ocr:true,goal:20};
 async function load(){
-  S.docs=await dbAll('docs');S.vers=await dbAll('versions');S.qs=await dbAll('questions');S.sessions=await dbAll('sessions');
+  const allDocs=await dbAll('docs');S.docs=allDocs.filter(d=>!d.deleted);S.trash=allDocs.filter(d=>d.deleted);S.vers=await dbAll('versions');S.qs=await dbAll('questions');S.qIndex=new Map(S.qs.map(q=>[q.id,q]));S.sessions=(await dbAll('sessions')).sort((a,b)=>b.ts-a.ts);
   S.prof=Object.assign({},DEF,await dbGet('kv','profile')||{});
 }
 const saveProf=()=>dbPut('kv',S.prof);
 const curVer=d=>S.vers.find(v=>v.id===d.cur);
 const curQs=(f)=>S.qs.filter(q=>S.docs.some(d=>d.cur===q.vid)&&(!f||f(q)));
-const valid=()=>curQs(q=>q.state==='validated'&&q.kind==='provided');
+const valid=()=>curQs(q=>q.state==='validated'&&Number.isInteger(q.ans)&&q.ans>=0&&q.ans<4&&(q.kind==='provided'?q.answerLetter==='ABCD'[q.ans]:q.reviewedBy==='humano'||q.checks?.length));
 
 /* ============ UI helpers ============ */
 let AC;function beep(f,d=.12,t='sine'){if(!S.prof.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t;o.frequency.value=f;g.gain.value=.07;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d)}catch(e){}}
-const buzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
-function toast(m,err){const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),err?4200:2600)}
+const buzz=ms=>{try{S.prof.vibrate&&navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
+function toast(m,err){const t=document.createElement('div');t.className='toast'+(err?' err':'');t.setAttribute('role','status');t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),err?4200:2600)}
 function floatXP(n){const e=document.createElement('div');e.className='xp';e.textContent='+'+n+' XP';document.body.appendChild(e);setTimeout(()=>e.remove(),1000)}
 function confetti(){for(let i=0;i<46;i++){const e=document.createElement('i');e.className='cf';e.style.left=Math.random()*100+'vw';e.style.background=['#7c5cff','#22d3ee','#22c55e','#f59e0b','#ef4444'][i%5];e.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(e);setTimeout(()=>e.remove(),3000)}}
-const modal=h=>{S.modal=h;render()};const closeModal=()=>{S.modal=null;render()};
+const modal=h=>{S.modal=h;render();focusDialog()};const closeModal=()=>{S.modal=null;render()};
 const bump=()=>{const t=today();if(S.prof.todayDay!==t){S.prof.todayDay=t;S.prof.todayN=0}};
 function touchStreak(){
   const t=today();if(S.prof.lastDay===t)return;
   const y=new Date();y.setDate(y.getDate()-1);const ys=y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
-  S.prof.streak=S.prof.lastDay===ys?S.prof.streak+1:1;S.prof.best=Math.max(S.prof.best,S.prof.streak);S.prof.lastDay=t;
+  const gap=Math.round((Date.parse(t)-Date.parse(S.prof.lastDay))/864e5);S.prof.streak=gap>=0&&gap<=3?S.prof.streak+1:1;S.prof.best=Math.max(S.prof.best,S.prof.streak);S.prof.lastDay=t;
 }
-function gainXP(n){const l0=levelOf(S.prof.xp);S.prof.xp+=n;floatXP(n);if(levelOf(S.prof.xp)>l0){toast('🎉 ¡Nivel '+levelOf(S.prof.xp)+'!');beep(880,.3,'triangle');confetti()}}
+function gainXP(n){if(!n)return;const l0=levelOf(S.prof.xp);S.prof.xp+=n;floatXP(n);if(levelOf(S.prof.xp)>l0){toast('🎉 ¡Nivel '+levelOf(S.prof.xp)+'!');beep(880,.3,'triangle');confetti()}}
 const ACH=[
  ['🚀','Primer examen',p=>p.exams>=1],['🔥','Racha de 3 días',p=>p.best>=3],['🔥','Racha de 7 días',p=>p.best>=7],['🏆','Examen perfecto',p=>p.perfect>=1],
  ['💯','100 aciertos',p=>p.correct>=100],['🧠','500 aciertos',p=>p.correct>=500],['⭐','Nivel 5',p=>levelOf(p.xp)>=5],['👑','Nivel 10',p=>levelOf(p.xp)>=10]];
 
 /* ============ Procesamiento documental ============ */
-const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',PDFW='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',TESS='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('No se pudo cargar '+src+' (¿sin conexión la primera vez?)'));document.head.appendChild(s)});
-async function pdfLib(){if(!window.pdfjsLib){await loadScript(PDFJS);pdfjsLib.GlobalWorkerOptions.workerSrc=PDFW}return pdfjsLib}
-async function ocrCanvas(canvas){if(!window.Tesseract)await loadScript(TESS);const w=await Tesseract.createWorker('spa');try{const{data}=await w.recognize(canvas);return{text:data.text,conf:Math.round(data.confidence)}}finally{await w.terminate()}}
+const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('No se pudo cargar '+src));document.head.appendChild(s)});
+function pdfOptions(data){
+  const url=name=>new URL('vendor/'+name+'/',document.baseURI).href;
+  return {data,isEvalSupported:false,useSystemFonts:true,standardFontDataUrl:url('pdf-fonts'),cMapUrl:url('pdf-cmaps'),cMapPacked:true,wasmUrl:url('pdf-wasm')};
+}
+async function pdfLib(){
+  const lib=await import('./vendor/pdf.min.mjs');
+  lib.GlobalWorkerOptions.workerSrc=new URL('vendor/pdf.worker.min.mjs',document.baseURI).href;
+  return lib;
+}
+async function ocrCanvas(canvas){
+  if(!window.Tesseract)await loadScript('./vendor/tesseract.min.js');
+  const local=name=>new URL('vendor/'+name,document.baseURI).href;
+  const worker=await Tesseract.createWorker(S.prof.ocrLang||'spa+eng',1,{workerPath:local('worker.min.js'),corePath:local('tesseract-core-lstm.js'),langPath:local(''),workerBlobURL:false});
+  let timer;const job=activeImport;
+  try{
+    const abort=new Promise((_,reject)=>{const stop=()=>reject(Error('OCR cancelado'));if(job)job.stop=stop;timer=setTimeout(()=>reject(Error('OCR superó 90 segundos por página')),90000)});
+    checkImport();const {data}=await Promise.race([worker.recognize(canvas),abort]);return {text:data.text,conf:Math.round(data.confidence)}
+  }finally{clearTimeout(timer);if(job)job.stop=null;await worker.terminate()}
+}
 const progress=(msg,pct)=>{S.busy=msg?{msg,pct}:null;render()};
 async function ocrPage(pdf,n){
-  const pg=await pdf.getPage(n),vp=pg.getViewport({scale:2}),cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+  const pg=await pdf.getPage(n),unit=pg.getViewport({scale:1}),vp=pg.getViewport({scale:Math.min(2.5,Math.sqrt(8000000/(unit.width*unit.height)))}),cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
   await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;return ocrCanvas(cv);
 }
 async function extractPdf(buf,onp,only){
-  const lib=await pdfLib(),pdf=await lib.getDocument({data:buf.slice(0)}).promise,pages=[];
-  for(let n=1;n<=pdf.numPages;n++){
+  const lib=await pdfLib(),task=lib.getDocument(pdfOptions(buf.slice(0))),pages=[];const job=typeof activeImport==='undefined'?null:activeImport;if(job)job.stop=()=>task.destroy();let pdf;try{pdf=await task.promise}finally{if(job)job.stop=null}
+  try{if(pdf.numPages>500)throw Error("Máximo 500 páginas por PDF");for(let n=1;n<=pdf.numPages;n++){checkImport();
     if(only&&only!==n){pages.push(null);continue}
     onp&&onp('Extrayendo texto · pág. '+n+'/'+pdf.numPages,n/pdf.numPages);
     const pg=await pdf.getPage(n),tc=await pg.getTextContent();let t='',ly=null;
-    for(const it of tc.items){if(ly!==null&&Math.abs(it.transform[5]-ly)>2)t+='\n';else if(t&&!t.endsWith(' ')&&!t.endsWith('\n'))t+=' ';t+=it.str;ly=it.transform[5]}
+    for(const it of tc.items){if(!it.transform)continue;if(ly!==null&&Math.abs(it.transform[5]-ly)>2)t+='\n';else if(t&&!t.endsWith(' ')&&!t.endsWith('\n'))t+=' ';t+=it.str;ly=it.transform[5]}
     t=cleanText(t);let src='native',conf=null,flag=false;
-    if(t.length<100||textQuality(t)<0.62){
-      if(S.prof.ocr){try{onp&&onp('OCR · pág. '+n+'/'+pdf.numPages,n/pdf.numPages);const o=await ocrPage(pdf,n);t=cleanText(o.text);src='ocr';conf=o.conf;if(conf<70||t.length<60||textQuality(t)<0.52)flag='OCR de baja confianza ('+conf+'%)'}catch(e){flag='Sin texto y OCR no disponible'}}
+    if(!t||textQuality(t)<0.32&&!/[1-9]\d*\s*=\s*[A-D]/i.test(t)){
+      if(S.prof.ocr){try{onp&&onp('OCR · pág. '+n+'/'+pdf.numPages,n/pdf.numPages);const o=await ocrPage(pdf,n);t=cleanText(o.text);src='ocr';conf=o.conf;if(conf<70||t.length<60||textQuality(t)<0.52)flag='OCR de baja confianza ('+conf+'%)'}catch(e){flag='OCR no disponible: '+e.message}}
       else flag='Sin texto nativo (OCR desactivado)';
     }
     pages.push({n,text:t,src,conf,flag});
   }
-  return{pages,pdf};
+  return{pages};}finally{await pdf.destroy()}
 }
-async function registerVersion(name,hash,pages,size,blob){
-  let doc=S.docs.find(d=>d.name===name);
-  if(!doc){doc={id:uid(),name,created:Date.now(),vcount:0,cur:null};}
-  const old=doc.cur;doc.vcount++;
-  if(old){for(const q of S.qs.filter(q=>q.vid===old&&q.state!=='archived')){q.prevState=q.state;q.state='archived';await dbPut('questions',q)}}
-  const vid=uid(),{chunks,sections}=buildChunks(vid,pages);
-  const ver={id:vid,docId:doc.id,n:doc.vcount,hash,size,pages,chunks,sections,processed:Date.now(),extractor:'pdfjs-3.11.174/dom-1',ocr:'tesseract-5/spa',status:'indexado'};
-  doc.cur=vid;await dbPut('docs',doc);await dbPut('versions',ver);if(blob)await dbPut('files',{id:vid,blob});
-  await audit('doc',`Documento "${name}" v${ver.n} indexado (${pages.length} págs, ${chunks.length} fragmentos)`);
-  if(old)await audit('doc',`Versión anterior de "${name}" conservada (preguntas archivadas)`);
-  await load();return ver;
+async function atomicWrite(stores,fn){return new Promise((resolve,reject)=>{const tx=db.transaction(stores,'readwrite');tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error||new Error('Operación cancelada'));try{fn(tx)}catch(e){tx.abort();reject(e)}})}
+async function registerVersion(name,hash,pages,size,blob,parsed,sourceJSON=null){
+  const doc={id:uid(),name,created:Date.now(),vcount:1,cur:null};
+  const vid=uid(),{chunks,sections}=buildChunks(vid,pages),ver={id:vid,docId:doc.id,n:1,hash,size,pages,chunks,sections,sourceJSON,processed:Date.now(),status:'indexado'};doc.cur=vid;
+  for(const q of parsed){q.optionIds=q.opts.map((_,i)=>q.id+'-'+i);q.revision=1;q.vid=vid;q.docId=doc.id;q.ev.vid=vid}
+  await atomicWrite(['docs','versions','questions','files','audit'],tx=>{const ok=parsed.filter(q=>q.state==='validated').length;tx.objectStore('audit').put({id:uid(),type:'job',ts:Date.now(),msg:'Importación de banco',proposed:parsed.length,validated:ok,pending:parsed.length-ok});tx.objectStore('docs').put(doc);tx.objectStore('versions').put(ver);if(blob)tx.objectStore('files').put({id:vid,blob});for(const q of parsed)tx.objectStore('questions').put(q)});
+  await load();return {total:parsed.length,ok:parsed.filter(q=>q.state==='validated').length,pending:parsed.filter(q=>q.state!=='validated').length};
+}
+async function reprocessVersion(id){
+  const v=S.vers.find(x=>x.id===id);if(!v)return;const fresh=v.sourceJSON?parseExamJSON(v.sourceJSON):parseProvidedExam(v.pages);diagnose(fresh,S.qs.filter(q=>q.vid!==id),v.pages);const old=S.qs.filter(q=>q.vid===id&&q.kind==='provided');let fixed=0;const updates=[];const byNumber=new Map();for(const x of fresh){if(x.state!=='validated')continue;if(!byNumber.has(x.sourceNumber))byNumber.set(x.sourceNumber,[]);byNumber.get(x.sourceNumber).push(x)}
+  for(const q of old){if(q.state!=='needs_review'&&q.state!=='pending_validation')continue;const matches=byNumber.get(q.sourceNumber)||[];if(matches.length!==1)continue;const x=matches[0];if(optionNorm(x.q)!==optionNorm(q.q)||JSON.stringify(x.opts.map(optionNorm))!==JSON.stringify(q.opts.map(optionNorm)))continue;updates.push({...q,ans:x.ans,answerLetter:x.answerLetter,state:'validated',reasons:[],score:100,expl:x.expl});fixed++}
+  if(updates.length)await exportBackup();await atomicWrite(['questions'],tx=>{for(const q of updates)tx.objectStore('questions').put(q)});await load();render();toast(fixed+' preguntas recuperadas; las restantes requieren revisión');
 }
 async function generateFor(ver,max){
   const t0=Date.now();progress('Generando y verificando preguntas…',.9);
@@ -361,43 +187,7 @@ async function generateFor(ver,max){
   const ms=Date.now()-t0;await audit('job',`Generación v${ver.n}: ${v+r+p} propuestas, ${v} validadas, ${r} rechazadas`,{proposed:v+r+p,validated:v,rejected:r,pending:p,reasons,ms,tokens:0,cost:0});
   await load();return{proposed:v+r+p,v,r,p};
 }
-async function ingest(file){
-  try{
-    progress('Calculando huella SHA-256…',.02);
-    const buf=await file.arrayBuffer(),hash=await sha256(buf);
-    const duplicate=S.vers.find(v=>v.hash===hash);
-    if(duplicate){
-      const already=S.qs.some(q=>q.vid===duplicate.id&&q.kind==='provided');
-      if(already){progress(null);toast('Este examen ya está importado');return}
-      const parsed=parseProvidedExam(duplicate.pages||[]);
-      if(!parsed.length){progress(null);toast('El documento ya existe, pero no contiene un examen reconocible',true);return}
-      const res=await saveProvidedQuestions(duplicate,parsed);progress(null);toast(`✅ Examen recuperado: ${res.ok} preguntas en orden${res.pending?' · '+res.pending+' pendientes':''}`);return;
-    }
-    let pages,blob=null;
-    if(/\.pdf$/i.test(file.name)||file.type==='application/pdf'){const e=await extractPdf(buf,progress);pages=e.pages;blob=new Blob([buf],{type:'application/pdf'})}
-    else pages=txtPages(new TextDecoder().decode(buf));
-    if(!pages.length||pages.every(p=>p.text.length<40&&!p.flag))throw new Error('No se encontró texto utilizable');
-    progress('Indexando contenido…',.8);
-    const ver=await registerVersion(file.name,hash,pages,buf.byteLength,blob);
-    const parsed=parseProvidedExam(pages);
-    if(!parsed.length)throw new Error('No he encontrado un examen estructurado con preguntas y cuatro opciones A-D. No se generarán preguntas inventadas.');
-    const res=await saveProvidedQuestions(ver,parsed);progress(null);
-    const fl=pages.filter(p=>p.flag).length;
-    toast(`✅ ${res.ok} preguntas importadas en orden${res.pending?' · '+res.pending+' sin clave para revisar':''}${fl?' · '+fl+' págs. dudosas':''}`);
-  }catch(e){progress(null);await audit('error',e.message);toast('Error: '+e.message,true)}
-}
-async function ingestText(name,text){
-  try{
-    const buf=new TextEncoder().encode(text),hash=await sha256(buf.buffer);
-    if(S.vers.some(v=>v.hash===hash)){toast('Texto idéntico ya procesado');return}
-    const pages=txtPages(text);if(!pages.length)throw new Error('Texto vacío');
-    const ver=await registerVersion(name||'Texto pegado',hash,pages,buf.byteLength,null),parsed=parseProvidedExam(pages);
-    if(!parsed.length)throw new Error('No he encontrado preguntas numeradas con cuatro opciones A-D. No se inventarán preguntas.');
-    const res=await saveProvidedQuestions(ver,parsed);progress(null);
-    toast(`✅ ${res.ok} preguntas importadas en orden${res.pending?' · '+res.pending+' pendientes de clave':''}`);
-  }catch(e){progress(null);toast('Error: '+e.message,true)}
-}
-
+/* importación en import.js */
 /* ============ Exámenes ============ */
 const pub=q=>({id:q.id,q:q.q,opts:q.opts});
 async function startRun({mode,docIds,n,learn,secs}){
@@ -406,48 +196,67 @@ async function startRun({mode,docIds,n,learn,secs}){
   if(mode==='review')pool=pool.filter(q=>q.st.seen>0&&q.srs.due<=now);
   if(mode==='failed')pool=pool.filter(q=>q.st.ko>0&&q.st.ok<=q.st.ko);
   if(mode==='fav')pool=pool.filter(q=>q.fav);
+  pool=filterPool(pool,mode);
   const want=n||40;
   if(pool.length<want&&(mode==='sim'||mode==='custom')){
-    modal(`<h2>No hay suficientes preguntas verificadas</h2><p>Existen <b>${pool.length}</b> preguntas validadas en este alcance y el examen pedía <b>${want}</b>. No se inventan las que faltan.</p><p class="mu">Falta contenido: añade más documentos o texto, o reduce el tamaño.</p>
+    modal(`<h2>No hay suficientes preguntas disponibles</h2><p>Existen <b>${pool.length}</b> preguntas aptas para estudiar en este alcance y el examen pedía <b>${want}</b>. No se inventan las que faltan.</p><p class="mu">Falta contenido: añade más documentos o texto, o reduce el tamaño.</p>
     <div class="row wrap">${pool.length?`<button class="pri" data-a="runN" data-mode="${mode}" data-n="${pool.length}" data-learn="${learn?1:0}" data-docs="${(docIds||[]).join(',')}">Hacer examen de ${pool.length}</button>`:''}<button data-a="tab" data-t="lib">Añadir material</button><button data-a="close">Cerrar</button></div>`);return;
   }
   if(!pool.length){toast(mode==='review'?'🎉 Nada pendiente de repaso hoy':'No hay preguntas para este modo',true);return}
-  const ordered=(mode==='sim'||mode==='custom')&&pool.length&&pool.every(q=>q.kind==='provided')?pool.slice().sort((a,b)=>(a.sourceOrder||a.sourceNumber||0)-(b.sourceOrder||b.sourceNumber||0)).slice(0,Math.min(want,pool.length)):pickExam(pool,Math.min(want,pool.length),Math.random);
+  const ordered=(mode==='sim'||mode==='custom')&&pool.length&&pool.every(q=>q.kind==='provided')?pool.slice().sort((a,b)=>(a.sourceOrder||a.sourceNumber||0)-(b.sourceOrder||b.sourceNumber||0)).slice(0,Math.min(want,pool.length)):pickExam(pool,Math.min(want,pool.length),mode==='daily'?rng(Number(today().replaceAll('-',''))):Math.random);
+  if(mode==='daily'){const sorted=pool.slice().sort((a,b)=>a.id.localeCompare(b.id));ordered.splice(0,ordered.length,...shuffle(sorted,rng(Number(today().replaceAll('-','')))).slice(0,want))}
   const ids=ordered.map(q=>q.id);
-  S.run={id:uid(),mode,learn:true,ids,i:0,ans:{},t0:Date.now(),secs:secs||0,combo:0,xp:0,done:false,res:null,locked:false,sel:null,left:secs||0};
+  S.run={id:uid(),mode,learn:learn!==false,orders:Object.fromEntries(ordered.map(q=>[q.id,S.prof.shuffle?shuffle([0,1,2,3],Math.random):[0,1,2,3]])),snap:Object.fromEntries(ordered.map(q=>[q.id,studyCopy(q)])),ids,i:0,ans:{},t0:Date.now(),secs:secs||0,combo:0,xp:0,done:false,res:null,locked:false,sel:null,left:secs||0};
   S.modal=null;S.tab='run';await saveRun();render();startTimer();
 }
 const saveRun=()=>dbPut('sessions',{id:S.run.id,status:'open',run:{...S.run,res:null},ts:Date.now()});
-let TM;function startTimer(){clearInterval(TM);if(!S.run||!S.run.secs||S.run.done)return;S.run.left=S.run.secs;TM=setInterval(()=>{if(!S.run||S.run.locked){return}S.run.left--;const b=$('#tb');if(b)b.style.width=(S.run.left/S.run.secs*100)+'%';if(S.run.left<=0)choose(-1)},1000)}
-const qOf=id=>S.qs.find(q=>q.id===id);
+let TM;function startTimer(){clearInterval(TM);if(!S.run||!S.run.secs||S.run.done)return;TM=setInterval(()=>{if(!S.run||S.run.locked||S.modal||actionBusy){return}S.run.left--;const b=$('#tb');if(b)b.style.width=(S.run.left/S.run.secs*100)+'%';if(S.run.left<=0)dispatchAction(()=>choose(-1),{},null)},1000)}
+const qOf=id=>S.qIndex.get(id);
 async function applyResult(q,ok){
-  srsUpdate(q,ok);await dbPut('questions',q);bump();S.prof.answered++;S.prof.todayN++;if(ok)S.prof.correct++;touchStreak();
+  srsUpdate(q,ok,Date.now(),!!S.run.doubt,S.prof.intervals||INTERVALS);bump();S.prof.answered++;S.prof.todayN++;if(ok)S.prof.correct++;touchStreak();
+}
+function forgetReceipt(){try{globalThis.localStorage?.removeItem('testclau.pendingAnswer')}catch{}}
+function clearReceipt(receipt){
+  try{const store=globalThis.localStorage;if(store?.getItem('testclau.pendingAnswer')===receipt)store.removeItem('testclau.pendingAnswer')}catch{}
+}
+async function recoverAnswer(){
+  let raw;try{raw=globalThis.localStorage?.getItem('testclau.pendingAnswer')}catch{}
+  if(!raw)return;
+  let r;try{r=JSON.parse(raw)}catch{clearReceipt(raw);return}
+  const run=S.run;
+  if(run.id!==r.id)return;
+  if(run.i===r.step&&run.ids[run.i]===r.question&&!run.locked&&Number.isInteger(r.choice)&&r.choice>=-1&&r.choice<4&&(run.learn||run.sel!==r.choice))await choose(r.choice);
+  clearReceipt(raw);
 }
 async function choose(i){
-  const R=S.run;if(!R||R.locked)return;const q=qOf(R.ids[R.i]);
-  if(!R.learn){R.sel=i;R.ans[R.i]=i;render();return}
-  R.locked=true;R.sel=i;R.ans[R.i]=i;const ok=i===q.ans;
-  await applyResult(q,ok);
-  if(ok){R.combo++;const x=10+Math.min(R.combo,10)*2;R.xp+=x;gainXP(x);beep(660,.12,'triangle');beep(990,.15,'triangle');buzz(20)}else{R.combo=0;beep(180,.25,'sawtooth');buzz([60,40,60])}
-  await saveProf();await saveRun();render();
+  const R=S.run;if(!R||R.locked||R.done)return;const q=runQuestion(R,R.i);
+  const receipt=JSON.stringify({id:R.id,step:R.i,question:q.id,choice:i});
+  try{globalThis.localStorage?.setItem('testclau.pendingAnswer',receipt)}catch{}
+  if(!R.learn){R.sel=i;R.ans[R.i]=i;await saveRun();clearReceipt(receipt);render();return}
+  R.locked=true;R.sel=i;R.ans[R.i]=i;const ok=correctOption(q,i);
+  if(R.mode!=='cards')await applyResult(qOf(q.id),ok);
+  if(ok){R.combo++;const x=R.mode==='cards'?0:10+Math.min(R.combo,10)*2;R.xp+=x;if(x)gainXP(x);beep(660,.12,'triangle');beep(990,.15,'triangle');buzz(20)}else{R.combo=0;beep(180,.25,'sawtooth');buzz([60,40,60])}
+  if(!ok&&R.mode==='survival')R.ids.length=R.i+1;
+  if(!ok&&['learn','quick','failed','review'].includes(R.mode)&&!(R.retried||[]).includes(q.id)){(R.retried||=[]).push(q.id);R.ids.push(q.id)}
+  await commitRun([qOf(q.id)]);clearReceipt(receipt);render();
 }
 async function nextQ(){
-  const R=S.run;if(R.i+1>=R.ids.length)return finishRun();
-  R.i++;R.locked=false;R.sel=R.ans[R.i]!=null?R.ans[R.i]:null;R.left=R.secs;await saveRun();render();startTimer();
+  const R=S.run;if(!R||R.done||(!R.locked&&(R.learn||R.sel==null)))return;if(R.i+1>=R.ids.length)return finishRun();
+  R.i++;R.doubt=false;R.flipped=false;R.locked=false;R.sel=R.ans[R.i]!=null?R.ans[R.i]:null;R.left=R.secs;await saveRun();render();startTimer();
 }
 async function finishRun(){
-  const R=S.run;clearInterval(TM);let ok=0,det=[];
+  const R=S.run;if(R.done)return;clearInterval(TM);let ok=0,det=[];
   for(let k=0;k<R.ids.length;k++){
-    const q=qOf(R.ids[k]),a=R.ans[k]!=null?R.ans[k]:-1,good=a===q.ans;if(good)ok++;
-    if(!R.learn)await applyResult(q,good);
-    det.push({id:q.id,a,good});
+    const q=runQuestion(R,k),a=R.ans[k]!=null?R.ans[k]:-1,good=correctOption(q,a);if(good)ok++;
+    if(!R.learn)await applyResult(qOf(q.id),good);
+    det.push({id:q.id,a,optionId:a>=0?(q.optionIds?.[a]||q.id+'-'+a):null,good,snapshot:studyCopy(q)});
   }
-  const pct=Math.round(ok/R.ids.length*100);let bonus=Math.round(pct/2)+(pct===100?50:0);
+  const pct=Math.round(ok/R.ids.length*100);let bonus=R.mode==='cards'?0:Math.round(pct/2)+(pct===100?50:0);
   if(!R.learn)R.xp+=ok*10;R.xp+=bonus;
-  S.prof.exams++;if(pct===100&&R.ids.length>=10)S.prof.perfect++;touchStreak();
+  if(R.mode!=='cards')S.prof.exams++;if(R.mode!=='cards'&&pct===100&&R.ids.length>=10)S.prof.perfect++;touchStreak();
   R.done=true;R.res={ok,total:R.ids.length,pct,det,bonus};
-  gainXP(bonus+(R.learn?0:ok*10));await saveProf();
-  await dbPut('sessions',{id:R.id,status:'final',final:true,mode:R.mode,res:R.res,ts:Date.now(),secs:Math.round((Date.now()-R.t0)/1000)});
+  gainXP(bonus+(R.learn?0:ok*10));
+  await commitRun(R.learn?[]:R.ids.map(qOf),{id:R.id,status:'final',final:true,mode:R.mode,res:R.res,ts:Date.now(),secs:Math.round((Date.now()-R.t0)/1000)});
   await load();if(pct>=70){confetti();beep(784,.2,'triangle')}render();
 }
 async function toggleFav(id){const q=qOf(id);q.fav=!q.fav;await dbPut('questions',q);render()}
@@ -459,46 +268,46 @@ function vHome(){
   const p=S.prof,L=levelOf(p.xp),base=60*(L-1)**2,next=60*L**2,pc=Math.round((p.xp-base)/(next-base)*100);
   bump();const goal=Math.min(100,Math.round(p.todayN/p.goal*100)),nv=valid().length,now=Date.now();
   const due=valid().filter(q=>q.st.seen>0&&q.srs.due<=now).length,failed=valid().filter(q=>q.st.ko>0&&q.st.ok<=q.st.ko).length,favs=valid().filter(q=>q.fav).length;
-  const open=S.sessions.find(s=>s.status==='open');
-  return`<div class="row sp"><div><h1>Test Master · v0.4</h1><div class="mu">Tus preguntas, en orden. Responde y comprueba.</div></div><div class="flame">🔥 <b>${p.streak}</b></div></div>
-  <div class="card row"><div class="ring" style="--p:${pc}%"><span>${L}</span></div><div class="g"><div class="row sp"><b>Nivel ${L}</b><span class="mu">${p.xp} XP</span></div><div class="bar"><i style="width:${pc}%"></i></div><div class="mu sm" style="margin-top:6px">Meta de hoy: ${p.todayN}/${p.goal} preguntas</div><div class="bar"><i style="width:${goal}%;background:linear-gradient(90deg,#22c55e,#a3e635)"></i></div></div></div>
-  ${open?`<div class="card row sp"><div><b>⏸ Examen sin terminar</b><div class="mu sm">${open.run.ids.length} preguntas · pregunta ${open.run.i+1}</div></div><button class="pri" data-a="resume">Reanudar</button></div>`:''}
-  ${nv===0?`<div class="card"><h3>Empieza aquí 👇</h3><p class="mu">Sube un PDF o pega texto en la Biblioteca. La app lo analiza, crea preguntas y solo usa las que puede demostrar con la fuente.</p><button class="pri" data-a="tab" data-t="lib">📚 Añadir material</button></div>`:''}
+  const open=S.sessions.filter(s=>s.status==='open');
+  return`<div class="row sp"><div><h1>TESTCLAU · 2.2</h1><div class="mu">Tus preguntas, en orden. Responde y comprueba.</div></div><div class="flame">🔥 <b>${p.streak}</b></div></div>
+  <div class="card row"><div class="ring" style="--p:${pc}%"><span>${L}</span></div><div class="g"><div class="row sp"><b>Nivel ${L} · ${L<3?'Cadete':L<7?'Técnico':'Instructor'}</b><span class="mu">${p.xp} XP</span></div><div class="bar"><i style="width:${pc}%"></i></div><div class="mu sm" style="margin-top:6px">Meta de hoy: ${p.todayN}/${p.goal} preguntas</div><div class="bar"><i style="width:${goal}%;background:linear-gradient(90deg,#22c55e,#a3e635)"></i></div></div></div>
+  ${open.map(s=>`<div class="card row sp"><div><b>Examen sin terminar</b><div class="mu sm">${s.run.ids.length} preguntas · pregunta ${s.run.i+1}</div></div><button class="pri" data-a="resume" data-id="${s.id}">Reanudar</button></div>`).join('')}
+  ${nv===0?`<div class="card"><h3>Empieza aquí 👇</h3><p class="mu">Sube un PDF o pega texto en la Biblioteca. Importa un examen con cuatro opciones y una clave. Puedes corregir preguntas pendientes en Revisar.</p><button class="pri" data-a="tab" data-t="lib">📚 Añadir material</button></div>`:''}
   <div class="grid">
-    <button class="tile big" data-a="setup" data-mode="sim"><span class="e">🎯</span><b>Examen de preguntas importadas</b><span class="sm">${nv} preguntas con respuesta · orden original</span></button>
+    <button class="tile big" data-a="setup" data-mode="sim"><span class="e">🎯</span><b>Examen de preguntas importadas</b><span class="sm">${nv} preguntas con respuesta · examen configurable</span></button>
     <button class="tile" data-a="runq" data-mode="review"><span class="e">🧠</span><b>Repaso del día</b><span class="mu sm">${due} pendientes</span></button>
     <button class="tile" data-a="runq" data-mode="failed"><span class="e">❌</span><b>Falladas</b><span class="mu sm">${failed} por dominar</span></button>
     <button class="tile" data-a="runq" data-mode="fav"><span class="e">⭐</span><b>Favoritas</b><span class="mu sm">${favs} guardadas</span></button>
     <button class="tile" data-a="runq" data-mode="time"><span class="e">⚡</span><b>Contrarreloj</b><span class="mu sm">10 preguntas · 20 s</span></button>
   </div>
-  <h2>🏅 Logros</h2><div>${ACH.map(a=>`<span class="badge ${a[2](p)?'':'off'}">${a[0]} ${a[1]}</span>`).join('')}</div>`;
+  ${studyHome()}<h2>🏅 Logros</h2><div>${ACH.map(a=>`<span class="badge ${a[2](p)?'':'off'}">${a[0]} ${a[1]}</span>`).join('')}</div>`;
 }
 function vLib(){
-  return`<div class="row sp"><h1>Biblioteca</h1></div>
-  <div class="card"><div class="row wrap"><button class="pri g" data-a="add">📄 Importar examen PDF / TXT</button><button class="g" data-a="paste">✍️ Pegar texto</button></div>
+  return`<div class="row sp"><h1>Biblioteca</h1><button data-a="browse">Buscar preguntas</button></div><div class="row wrap"><button data-a="groupEditor">Combinar bancos</button>${collections()}</div>
+  <div class="card"><div class="row wrap"><button class="pri g" data-a="add">📄 Importar examen PDF / TXT / JSON</button><button class="g" data-a="paste">✍️ Pegar texto</button></div>
   <p class="mu sm">Importa exámenes que ya contienen preguntas numeradas, cuatro opciones A-D y plantilla de respuestas. Se conserva el enunciado y el orden original: la app no inventa preguntas ni cambia las opciones.</p></div>
   ${S.docs.map(d=>{const v=curVer(d);if(!v)return'';const qs=S.qs.filter(q=>q.vid===v.id),c=s=>qs.filter(q=>q.state===s).length,fl=v.pages.filter(p=>p.flag);
   return`<div class="card"><div class="row sp"><h3>${esc(d.name)}</h3><span class="pill">v${v.n}</span></div>
   <div class="mu sm">${v.pages.length} págs · ${v.chunks.length} fragmentos · SHA ${esc(v.hash.slice(0,10))}… · ${new Date(v.processed).toLocaleDateString()}</div>
-  <div class="row wrap" style="margin:8px 0"><span class="pill validated">${c('validated')} validadas</span><span class="pill pending_validation">${c('pending_validation')+c('needs_review')} pendientes</span><span class="pill rejected">${c('rejected')} rechazadas</span></div>
+  <div class="row wrap" style="margin:8px 0"><span class="pill validated">${c('validated')} listas para estudiar</span><span class="pill pending_validation">${c('pending_validation')+c('needs_review')} pendientes</span><span class="pill rejected">${c('rejected')} rechazadas</span></div>
   ${fl.length?`<div class="sm wa">⚠️ ${fl.length} página(s) en revisión por texto dudoso: ${fl.map(p=>`<button data-a="ocr" data-v="${v.id}" data-n="${p.n}" style="padding:2px 8px">${p.n} ↻</button>`).join(' ')}</div>`:''}
-  <div class="row wrap" style="margin-top:8px"><button data-a="toc" data-v="${v.id}">📑 Índice</button><button data-a="extra" data-id="${d.id}">🧩 Importar de otro chat</button><button data-a="runDoc" data-id="${d.id}">▶ Examen</button><button class="dng" data-a="delDoc" data-id="${d.id}">🗑</button></div></div>`}).join('')||'<p class="mu">Aún no hay documentos.</p>'}`;
+  <div class="row wrap" style="margin-top:8px"><button data-a="reprocess" data-v="${v.id}">↻ Recuperar pendientes</button><button data-a="toc" data-v="${v.id}">📑 Índice</button><button data-a="source" data-v="${v.id}">Consultar fuente</button><button data-a="extra" data-id="${d.id}">🧩 Importar de otro chat</button><button data-a="runDoc" data-id="${d.id}">▶ Examen</button><button class="dng" data-a="delDoc" data-id="${d.id}">🗑</button></div></div>`}).join('')||'<p class="mu">Aún no hay documentos.</p>'}`;
 }
 function vRev(){
-  const list=curQs(q=>q.state==='pending_validation'||q.state==='needs_review');
-  return`<h1>Revisión</h1><p class="mu">Preguntas que no se pueden demostrar automáticamente (p. ej. las traídas de otro chat). Aprueba solo si la cita respalda la respuesta marcada. Nada de esto aparece en exámenes hasta que lo valides.</p>
-  ${list.map(q=>`<div class="card"><div class="q">${esc(q.q)}</div>${q.opts.map((o,i)=>`<div class="sm ${i===q.ans?'ok':'mu'}">${'ABCD'[i]}) ${esc(o)} ${i===q.ans?'✓':''}</div>`).join('')}
-  <div class="quote">Pág. ${q.ev.page}: ${esc(q.ev.quote)}</div><div class="row"><button class="pri g" data-a="approve" data-id="${q.id}">✅ Aprobar</button><button class="dng g" data-a="reject" data-id="${q.id}">✖ Rechazar</button></div></div>`).join('')||'<div class="card mu">Nada pendiente 🎉</div>'}`;
+  const all=curQs(q=>q.state==='pending_validation'||q.state==='needs_review'||q.state==='rejected');
+  S.revOffset=Math.min(S.revOffset||0,Math.max(0,Math.floor((all.length-1)/30)*30));const list=all.slice(S.revOffset||0,(S.revOffset||0)+30);return`<h1>Revisión</h1><p class="mu">Preguntas que no se pueden demostrar automáticamente (p. ej. las traídas de otro chat). Aprueba solo si la cita respalda la respuesta marcada. Nada de esto aparece en exámenes hasta que lo valides.</p>
+  ${pager('rev',all.length,S.revOffset||0)}${list.map(q=>`<div class="card"><div class="q">${esc(q.q)}</div>${q.opts.map((o,i)=>`<div class="sm ${q.answerLetter&&i===q.ans?'ok':'mu'}">${'ABCD'[i]}) ${esc(o)} ${q.answerLetter&&i===q.ans?'✓':''}</div>`).join('')}
+  <div class="quote">${esc((q.reasons||[]).join(" · "))} · Pág. ${q.ev.page}: ${esc(q.ev.quote)}</div><div class="row"><button data-a="editQ" data-id="${q.id}">Editar</button><button class="pri g" data-a="approve" data-id="${q.id}">Revisar clave y fuente</button><button class="dng g" data-a="reject" data-id="${q.id}">✖ Rechazar</button></div></div>`).join('')||'<div class="card mu">Nada pendiente 🎉</div>'}`;
 }
 function vStats(){
   const p=S.prof;
-  return`<h1>Progreso</h1><div class="grid"><div class="card"><div class="mu">Respondidas</div><h1>${p.answered}</h1></div><div class="card"><div class="mu">Acierto global</div><h1>${p.answered?Math.round(p.correct/p.answered*100):0}%</h1></div><div class="card"><div class="mu">Exámenes</div><h1>${p.exams}</h1></div><div class="card"><div class="mu">Mejor racha</div><h1>🔥 ${p.best}</h1></div></div>
+  return`<h1>Progreso</h1>${studyStats()}${trainingSummary()}<div class="grid"><div class="card"><div class="mu">Respondidas</div><h1>${p.answered}</h1></div><div class="card"><div class="mu">Acierto global</div><h1>${p.answered?Math.round(p.correct/p.answered*100):0}%</h1></div><div class="card"><div class="mu">Exámenes</div><h1>${p.exams}</h1></div><div class="card"><div class="mu">Mejor racha</div><h1>🔥 ${p.best}</h1></div></div>
   ${S.docs.map(d=>{const v=curVer(d);if(!v)return'';const qs=S.qs.filter(q=>q.vid===v.id&&q.state==='validated');
   return`<div class="card"><h3>${esc(d.name)}</h3><div class="mu sm">Mapa de dominio por página</div><div class="heat" style="margin-top:8px">${v.pages.map(pg=>{const x=qs.filter(q=>q.ev.page===pg.n&&q.st.seen>0);if(pg.flag)return`<i title="Pág ${pg.n}: en revisión" style="background:#f59e0b66"></i>`;if(!x.length)return`<i title="Pág ${pg.n}"></i>`;const a=x.reduce((s,q)=>s+q.st.ok,0)/x.reduce((s,q)=>s+q.st.seen,0);return`<i title="Pág ${pg.n}: ${Math.round(a*100)}%" style="background:hsl(${a*120} 70% 45%)"></i>`}).join('')}</div></div>`}).join('')}
-  <h2>🗓 Historial</h2>${S.sessions.filter(s=>s.final).sort((a,b)=>b.ts-a.ts).slice(0,15).map(s=>`<div class="card row sp"><div><b>${s.res.ok}/${s.res.total}</b> <span class="mu sm">${new Date(s.ts).toLocaleString()}</span></div><span class="pill ${s.res.pct>=70?'validated':'rejected'}">${s.res.pct}%</span></div>`).join('')||'<p class="mu">Sin exámenes todavía.</p>'}`;
+  <h2>🗓 Historial</h2>${S.sessions.filter(s=>s.final).sort((a,b)=>b.ts-a.ts).slice(0,15).map(s=>`<div class="card row sp"><div><b>${s.res.ok}/${s.res.total}</b> · ${esc(modes[s.mode]||(s.mode==='sim'?'Simulacro':s.mode||'Sesión'))} · ${s.res.total&&s.secs!=null?Math.round(s.secs/s.res.total)+' s/preg. transcurridos':'sin tiempo'} <span class="mu sm">${new Date(s.ts).toLocaleString()}</span></div><span class="pill ${s.res.pct>=70?'validated':'rejected'}">${s.res.pct}%</span></div>`).join('')||'<p class="mu">Sin exámenes todavía.</p>'}`;
 }
 function vMore(){
-  return`<h1>Más</h1><div class="card"><div class="row sp"><span>🔊 Sonidos</span><button data-a="tog" data-k="sound">${S.prof.sound?'Activados':'Silencio'}</button></div><div class="row sp" style="margin-top:8px"><span>🔍 OCR automático (escaneados)</span><button data-a="tog" data-k="ocr">${S.prof.ocr?'Sí':'No'}</button></div>
+  return`<h1>Más</h1>${settings()}<div class="card"><div class="row sp"><span>🔊 Sonidos</span><button data-a="tog" data-k="sound">${S.prof.sound?'Activados':'Silencio'}</button></div><div class="row sp" style="margin-top:8px"><span>🔍 OCR automático (escaneados)</span><button data-a="tog" data-k="ocr">${S.prof.ocr?'Sí':'No'}</button></div>
   <div class="row sp" style="margin-top:8px"><span>🎯 Meta diaria</span><select data-a="goal" style="width:100px">${[10,20,40,80].map(n=>`<option ${S.prof.goal===n?'selected':''}>${n}</option>`).join('')}</select></div></div>
   <div class="card"><h3>💾 Copia de seguridad</h3><p class="mu sm">Exporta todo (documentos, preguntas, progreso) a un archivo con comprobación de integridad SHA-256. Es tu forma de sincronizar entre dispositivos.</p><div class="row"><button class="pri g" data-a="export">Exportar</button><button class="g" data-a="import">Importar</button></div></div>
   <div class="card"><button data-a="audit" class="g" style="width:100%">🧾 Informe de auditoría</button></div>
@@ -508,52 +317,56 @@ function vMore(){
 function vRun(){
   const R=S.run;
   if(R.done){const r=R.res;const fails=r.det.filter(d=>!d.good);
-    return`<div class="card" style="text-align:center"><div style="font-size:54px">${r.pct>=90?'🏆':r.pct>=70?'🎉':r.pct>=50?'💪':'📖'}</div><h1>${r.ok}/${r.total} · ${r.pct}%</h1><p class="mu">${r.pct>=90?'¡Brutal! Dominas esto.':r.pct>=70?'Aprobado. Sigue así.':'Cada fallo es repaso que sumará mañana.'}</p><h2 style="color:var(--ac2)">+${R.xp} XP</h2><div class="row"><button class="pri g" data-a="home">Inicio</button>${fails.length?`<button class="g" data-a="runq" data-mode="failed">Repasar falladas</button>`:''}</div></div>
-    <h2>Corrección y explicaciones</h2>${r.det.map(d=>{const q=qOf(d.id);return`<div class="card"><div class="q">${esc(q.q)}</div><div class="sm ${d.good?'ok':'ko'}">Tu respuesta: ${d.a>=0?esc(q.opts[d.a]):'sin responder'}</div><div class="sm ok">Correcta: ${esc(q.opts[q.ans])}</div><div class="quote">${esc(q.expl||q.ev.quote)}</div></div>`}).join('')}`;}
-  const q=qOf(R.ids[R.i]),pb=Math.round(R.i/R.ids.length*100);
-  return`<div class="row sp"><button data-a="exit">✕</button><span class="mu">${R.i+1} / ${R.ids.length}</span><button data-a="fav" data-id="${q.id}">${q.fav?'⭐':'☆'}</button></div>
+    return`<div class="card" style="text-align:center"><div style="font-size:54px">${r.pct>=90?'🏆':r.pct>=70?'🎉':r.pct>=50?'💪':'📖'}</div><h1>${r.ok}/${r.total} · ${r.pct}%</h1><p class="mu">${r.pct>=90?'Resultado de esta sesión.':r.pct>=70?'Sesión completada.':'Cada fallo es repaso que sumará mañana.'}</p>${R.mode==='cert'?'<p>Certificación interna de práctica · '+(r.total>=10&&r.pct>=80?'alcanzada':'requiere 10 preguntas y 80 % de acierto')+'</p>':''}<h2 style="color:var(--ac2)">+${R.xp} XP</h2><div class="row"><button class="pri g" data-a="home">Inicio</button>${fails.length?`<button class="g" data-a="runq" data-mode="failed">Repasar falladas</button>`:''}</div></div>
+    <h2>Corrección y explicaciones</h2>${r.det.map(d=>{const q=d.snapshot||qOf(d.id);return`<div class="card"><div class="q">${esc(q.q)}</div><div class="sm ${d.good?'ok':'ko'}">Tu respuesta: ${d.a>=0?esc(q.opts[d.a]):'sin responder'}</div><div class="sm ok">Correcta: ${esc(q.opts[q.ans])}</div><div class="quote">${esc(q.expl||q.ev.quote)}</div></div>`}).join('')}`;}
+  const q=runQuestion(R,R.i),pb=Math.round(R.i/R.ids.length*100);
+  return`<div class="row sp"><button data-a="exit">✕</button><span class="mu">${R.i+1} / ${R.ids.length}</span><button data-a="fav" data-id="${q.id}">${qOf(q.id)?.fav?'⭐':'☆'}</button></div>
   <div class="bar" style="margin:10px 0"><i style="width:${pb}%"></i></div>
   ${R.secs?`<div class="bar" style="height:6px"><i id="tb" style="width:${R.left/R.secs*100}%;background:linear-gradient(90deg,#f59e0b,#ef4444)"></i></div>`:''}
   ${R.combo>=2?`<div class="wa" style="font-weight:800;margin-top:6px">🔥 Combo x${R.combo}</div>`:''}
-  <div class="card"><div class="q">${esc(q.q)}</div></div>
-  ${q.opts.map((o,i)=>{let c='opt';if(R.locked){if(i===q.ans)c+=' good';else if(i===R.sel)c+=' bad'}else if(R.sel===i)c+=' sel';return`<button class="${c}" data-a="pick" data-i="${i}"><b>${'ABCD'[i]}</b> &nbsp;${esc(o)} ${R.locked&&i===q.ans?'✓':R.locked&&i===R.sel&&i!==q.ans?'✕':''}</button>`}).join('')}
-  ${R.locked?`<div class="card"><b class="${R.sel===q.ans?'ok':'ko'}">${R.sel===q.ans?'✓ CORRECTO':R.sel<0?'⏱ TIEMPO AGOTADO':'✕ INCORRECTO'}</b><div class="sm ok" style="margin-top:8px"><b>Respuesta correcta: ${'ABCD'[q.ans]}) ${esc(q.opts[q.ans])}</b></div><div class="quote"><b>Explicación:</b> ${esc(q.expl||q.ev.quote)}</div></div>`:''}
+  <div class="card"><div class="mu sm">${esc(provenance(q))}</div><div class="q">${esc(q.q)}</div>${runTools(R,q)}</div>
+  ${(R.mode==='cards'&&!R.flipped?[]:R.orders?.[q.id]||[0,1,2,3]).map((i,pos)=>{const o=q.opts[i];let c='opt';if(R.locked){if(i===q.ans)c+=' good';else if(i===R.sel)c+=' bad'}else if(R.sel===i)c+=' sel';return`<button class="${c}" data-a="pick" data-i="${i}"><b>${'ABCD'[pos]}</b> &nbsp;${esc(o)} ${R.locked&&i===q.ans?'✓':R.locked&&i===R.sel&&i!==q.ans?'✕':''}</button>`}).join('')}
+  ${R.locked?`<div class="card"><b class="${R.sel===q.ans?'ok':'ko'}">${R.sel===q.ans?'✓ CORRECTO':R.sel<0?'⏱ TIEMPO AGOTADO':'✕ INCORRECTO'}</b><div class="sm ok" style="margin-top:8px"><b>Respuesta correcta: ${esc(q.opts[q.ans])}</b></div><div class="quote"><b>Explicación:</b> ${esc(q.expl||q.ev.quote)}</div></div>`:''}
   ${(R.locked||(!R.learn&&R.sel!=null))?`<button class="pri" style="width:100%;margin-top:6px" data-a="next">${R.i+1>=R.ids.length?'Finalizar 🏁':'Siguiente →'}</button>`:''}`;
 }
 function render(){
-  renderNav();
+  if(!S.prof)return;
+  document.body.className=[S.prof.large&&"large",S.prof.contrast&&"contrast",S.prof.light&&"light",S.prof.focus&&"focus"].filter(Boolean).join(" ");renderNav();
   const v={home:vHome,lib:vLib,rev:vRev,stats:vStats,more:vMore,run:vRun}[S.tab]();
-  $('#app').innerHTML=v+(S.modal?`<div class="modal" data-a="mbg"><div>${S.modal}</div></div>`:'')+(S.busy?`<div class="ov"><div><div style="font-size:44px">⚙️</div><h2>${esc(S.busy.msg)}</h2><div class="bar" style="width:240px"><i style="width:${Math.round(S.busy.pct*100)}%"></i></div></div></div>`:'');
+  $('#app').innerHTML=v+(S.modal?`<div class="modal" role="dialog" aria-modal="true" aria-label="Detalle" data-a="mbg"><div>${S.modal}</div></div>`:'')+(S.busy?`<div class="ov"><div>${activeImport?'<button data-a="cancelJob">Cancelar importación</button>':''}<div style="font-size:44px">⚙️</div><h2>${esc(S.busy.msg)}</h2><div class="bar" style="width:240px"><i style="width:${Math.round(S.busy.pct*100)}%"></i></div></div></div>`:'');
 }
 
 /* ============ Acciones ============ */
 const A={
   tab:d=>{S.modal=null;S.tab=d.t;render()},home:()=>{S.tab='home';S.run=null;render()},close:closeModal,
   mbg:(d,e)=>{if(e.target.classList.contains('modal'))closeModal()},
+  reprocess:d=>reprocessVersion(d.v).catch(e=>toast(e.message,true)),
   add:()=>$('#file').click(),
-  paste:()=>modal(`<h2>Pegar texto</h2><input id="pn" placeholder="Nombre (ej. Tema 3)"><textarea id="pt" placeholder="Pega aquí el temario…"></textarea><div class="row"><button class="pri g" data-a="pasteGo">Procesar</button><button class="g" data-a="close">Cancelar</button></div>`),
+  paste:()=>modal(`<h2>Pegar texto</h2><input id="pn" placeholder="Nombre (ej. Tema 3)"><textarea id="pt" placeholder="Pega aquí el examen…"></textarea><div class="row"><button class="pri g" data-a="pasteGo">Procesar</button><button class="g" data-a="close">Cancelar</button></div>`),
   pasteGo:async()=>{const t=$('#pt').value,n=$('#pn').value;S.modal=null;progress('Procesando texto…',.5);await ingestText(n,t);progress(null);render()},
-  runq:d=>{const m=d.mode;if(m==='time')startRun({mode:'time',n:10,learn:true,secs:20});else startRun({mode:m,n:m==='review'||m==='failed'||m==='fav'?20:40,learn:true})},
-  setup:d=>modal(`<h2>🎯 Simulacro</h2><label class="mu sm">Alcance</label><select id="sd"><option value="">Todos los documentos</option>${S.docs.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select><label class="mu sm">Preguntas</label><select id="sn">${[50,40,20,10].filter(n=>n<=valid().length).map((n,i)=>`<option ${i===0?'selected':''}>${n}</option>`).join('')}</select><label class="mu sm">Modo</label><select id="sm"><option value="1">Corrección inmediata (después de cada respuesta)</option></select><div class="row" style="margin-top:10px"><button class="pri g" data-a="setupGo">¡Empezar!</button><button class="g" data-a="close">Cancelar</button></div>`),
-  setupGo:()=>{const d=$('#sd').value;startRun({mode:'sim',docIds:d?[d]:null,n:+$('#sn').value,learn:$('#sm').value==='1'})},
+  runq:d=>{const m=d.mode;if(m==='time')return startRun({mode:'time',n:10,learn:true,secs:20});else return startRun({mode:m,n:m==='review'||m==='failed'||m==='fav'?20:40,learn:true})},
+  setup:d=>modal(`<h2>🎯 Simulacro</h2><label class="mu sm">Alcance</label><select id="sd"><option value="">Todos los documentos</option>${S.docs.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select><label class="mu sm">Preguntas</label><select id="sn">${[...new Set([Math.min(50,valid().length),10,20,40,50,80,100,200])].filter(n=>n>0&&n<=valid().length).map((n,i)=>`<option ${i===0?'selected':''}>${n}</option>`).join('')}</select><label class="mu sm">Modo</label><select id="sm"><option value="1">Corrección inmediata (después de cada respuesta)</option><option value="0">Corrección al finalizar</option></select><div class="row" style="margin-top:10px"><button class="pri g" data-a="setupGo">¡Empezar!</button><button class="g" data-a="close">Cancelar</button></div>`),
+  setupGo:()=>{const d=$('#sd').value;return startRun({mode:'sim',docIds:d?[d]:null,n:+$('#sn').value,learn:$('#sm').value==='1'})},
   runN:d=>startRun({mode:'custom',docIds:d.docs?d.docs.split(','):null,n:+d.n,learn:d.learn==='1'}),
   runDoc:d=>startRun({mode:'sim',docIds:[d.id],n:40,learn:false}),
   pick:d=>choose(+d.i),next:nextQ,fav:d=>toggleFav(d.id),
   exit:()=>modal(`<h2>¿Salir?</h2><p class="mu">Tu progreso se guarda y podrás reanudar.</p><div class="row"><button class="g" data-a="close">Seguir</button><button class="pri g" data-a="home2">Salir</button></div>`),
-  home2:async()=>{clearInterval(TM);S.modal=null;await load();S.tab='home';S.run=null;render()},
-  resume:async()=>{const s=S.sessions.find(x=>x.status==='open');if(!s)return;S.run=s.run;S.run.learn=true;S.run.locked=false;S.run.sel=S.run.ans[S.run.i]!=null?S.run.ans[S.run.i]:null;S.tab='run';render();startTimer()},
-  approve:async d=>{const q=qOf(d.id);q.state='validated';q.validatedAt=Date.now();q.reviewedBy='humano';await dbPut('questions',q);await audit('review','Aprobada manualmente '+q.id);render();toast('Aprobada')},
+  home2:async()=>{clearInterval(TM);if(S.run&&!S.run.done)await saveRun();S.modal=null;await load();S.tab='home';S.run=null;render()},
+  resume:async d=>{const s=S.sessions.find(x=>x.status==='open'&&(!d?.id||d.id===x.id));if(!s)return;S.run=structuredClone(s.run);if(!S.run.snap)S.run.snap=Object.fromEntries(S.run.ids.map(id=>[id,studyCopy(qOf(id))]));S.run.sel=S.run.ans[S.run.i]!=null?S.run.ans[S.run.i]:null;S.tab='run';await recoverAnswer();render();startTimer()},
+  editQ:d=>{const q=qOf(d.id);modal(`<h2>Editar pregunta</h2><p>${esc(provenance(q))} · Pág. ${q.ev.page}</p><p>${esc(q.ev.quote)}</p><textarea id="eq">${esc(q.q)}</textarea>${Array.from({length:4},(_,i)=>q.opts[i]||'').map((o,i)=>`<label>${'ABCD'[i]}</label><textarea id="eo${i}">${esc(o)}</textarea>`).join('')}<select id="ea"><option value="">Elegir respuesta correcta</option>${[0,1,2,3].map(i=>`<option value="${i}" ${q.answerLetter&&i===q.ans?'selected':''}>${'ABCD'[i]}</option>`).join('')}</select><label><input type="checkbox" id="academic" style="width:auto"> He contrastado esta respuesta con el temario indicado en la referencia</label><label>Referencia al temario<input id="ref" value="${esc(q.referencia||'')}"></label><button data-a="saveQ" data-id="${q.id}">Guardar y validar</button>`)},
+  saveQ:async d=>{const q={...qOf(d.id)},text=$('#eq').value.trim(),opts=[0,1,2,3].map(i=>$('#eo'+i).value.trim()),a=$('#ea').value;if(q.kind!=='provided'){const test=verifyQ({...q,q:text,opts,ans:+a},S.vers.find(v=>v.id===q.vid),S.qs.filter(o=>o.vid===q.vid));if(test.checks.some(c=>c.crit&&!c.ok&&c.name!=='respuesta_respaldada_humana')||!$('#academic').checked)throw Error('Contrasta la fuente y resuelve las comprobaciones pendientes')}if(!text||!opts.every(Boolean)||new Set(opts.map(optionNorm)).size!==4||a===''){toast('Completa las opciones y elige una respuesta',true);return}if($('#academic').checked&&!$('#ref').value.trim())throw Error('Indica la referencia que has consultado');q.history=[...(q.history||[]),studyCopy(q)];q.optionIds=opts.map((value,i)=>value===q.opts[i]?(q.optionIds?.[i]||q.id+'-'+i):uid());q.revision=(q.revision||1)+1;Object.assign(q,{q:text,opts,ans:+a,answerLetter:'ABCD'[+a],state:'validated',reasons:[],referencia:$('#ref').value.trim(),keySource:'edición manual',academic:$('#academic').checked,reviewedBy:'humano',validatedAt:Date.now()});await dbPut('questions',q);S.modal=null;render()},
+  approve:d=>A.editQ(d),
   reject:async d=>{const q=qOf(d.id);q.state='rejected';q.reasons=['Rechazada manualmente'];await dbPut('questions',q);await audit('review','Rechazada manualmente '+q.id);render()},
   tog:async d=>{S.prof[d.k]=!S.prof[d.k];await saveProf();render()},
-  delDoc:d=>modal(`<h2>¿Borrar documento?</h2><p class="mu">Se eliminan sus versiones y preguntas.</p><div class="row"><button class="g" data-a="close">Cancelar</button><button class="dng g" data-a="delGo" data-id="${d.id}">Borrar</button></div>`),
-  delGo:async d=>{for(const v of S.vers.filter(v=>v.docId===d.id)){await dbDel('versions',v.id);await dbDel('files',v.id)}for(const q of S.qs.filter(q=>q.docId===d.id))await dbDel('questions',q.id);await dbDel('docs',d.id);await audit('doc','Documento eliminado');await load();S.modal=null;render()},
+  delDoc:d=>modal(`<h2>¿Mover a la papelera?</h2><p>Podrás recuperar el banco desde Más.</p><button data-a="delGo" data-id="${esc(d.id)}">Mover</button><button data-a="close">Cancelar</button>`),
+  delGo:d=>trashDoc(d.id,true),
   toc:d=>{const v=S.vers.find(x=>x.id===d.v);const secs=v.sections.length?v.sections:[];modal(`<h2>📑 Índice</h2><p class="mu sm">${secs.length} apartados detectados · ${v.pages.length} páginas</p>${secs.map(s=>`<div class="row sp sm"><span>${esc(s.title)}</span><span class="mu">pág. ${s.page}</span></div>`).join('')||'<p class="mu">No se detectaron títulos; el documento se organiza por páginas.</p>'}<h3 style="margin-top:12px">Preguntas por página</h3><div class="heat">${v.pages.map(p=>{const n=S.qs.filter(q=>q.vid===v.id&&q.ev.page===p.n&&q.state==='validated').length;return`<i title="Pág ${p.n}: ${n}" style="${n?`background:rgba(124,92,255,${Math.min(1,.25+n*.2)})`:''}"></i>`}).join('')}</div><button style="margin-top:14px" data-a="close">Cerrar</button>`)},
   ocr:async d=>{
     try{const f=await dbGet('files',d.v);if(!f)throw new Error('PDF original no disponible');const v=S.vers.find(x=>x.id===d.v);progress('Reprocesando página '+d.n+'…',.5);
-      const buf=await f.blob.arrayBuffer(),lib=await pdfLib(),pdf=await lib.getDocument({data:buf}).promise,o=await ocrPage(pdf,+d.n),pg=v.pages.find(p=>p.n===+d.n);
+      const buf=await f.blob.arrayBuffer(),lib=await pdfLib(),pdf=await lib.getDocument(pdfOptions(buf)).promise,o=await ocrPage(pdf,+d.n),pg=v.pages.find(p=>p.n===+d.n);
       pg.text=cleanText(o.text);pg.src='ocr';pg.conf=o.conf;pg.flag=(o.conf<70||pg.text.length<60||textQuality(pg.text)<0.52)?'OCR de baja confianza ('+o.conf+'%)':false;
       const{chunks,sections}=buildChunks(v.id,v.pages);v.chunks=chunks;v.sections=sections;await dbPut('versions',v);await load();
-      const res=await generateFor(S.vers.find(x=>x.id===d.v));progress(null);toast(pg.flag?'Sigue con baja calidad: '+pg.flag:'Página recuperada · '+res.v+' nuevas validadas',!!pg.flag);
+      await pdf.destroy();progress(null);await reprocessVersion(v.id);
     }catch(e){progress(null);toast(e.message,true)}
   },
   extra:d=>{
@@ -565,22 +378,17 @@ const A={
   copyP:async()=>{try{await navigator.clipboard.writeText(window._prompt);toast('Prompt copiado')}catch(e){toast('No se pudo copiar',true)}},
   impJson:async d=>{
     try{const doc=S.docs.find(x=>x.id===d.id),v=curVer(doc);let t=$('#jt').value.trim();const m=t.match(/\[[\s\S]*\]/);if(!m)throw new Error('No se encontró un array JSON');const arr=JSON.parse(m[0]);
-      let acc=[...S.qs.filter(q=>q.vid===v.id)],n=0,bad=0;
+      if(arr.length>10000)throw Error('Máximo 10.000 preguntas');let acc=[...S.qs.filter(q=>q.vid===v.id)],n=0,bad=0;const imported=[];
       for(const x of arr){
         let a=x.ans;if(typeof a==='string'){const L='ABCD'.indexOf(a.trim().toUpperCase()[0]);a=L>=0?L:parseInt(a,10)}
         const opts=Array.isArray(x.opts)?x.opts.map(o=>typeof o==='string'?o.replace(/^\s*[A-Da-d][).:]\s+/,'').trim():o):x.opts;
         const q={id:uid(),vid:v.id,docId:v.docId,kind:'ext',q:x.q,opts,ans:a,expl:x.expl||'',ev:{vid:v.id,page:+x.page,chunkId:null,quote:String(x.quote||'')},diff:x.diff||'media',state:'draft',created:Date.now(),srs:{box:0,due:0},st:{seen:0,ok:0,ko:0,last:0},fav:false};
-        const r=verifyQ(q,v,acc);q.state=r.state;q.score=r.score;q.checks=r.checks;q.reasons=r.reasons;if(q.state==='pending_validation')n++;else bad++;acc.push(q);await dbPut('questions',q)}
-      await audit('job',`Importación externa: ${n} pendientes de revisión, ${bad} rechazadas`,{proposed:arr.length,validated:0,rejected:bad,pending:n,tokens:0,cost:0,reasons:{}});await load();S.modal=null;render();toast(`${n} en Revisar, ${bad} rechazadas (cita no encontrada o esquema)`)
+        if(typeof q.q!=='string'||!Array.isArray(opts)||opts.length!==4||opts.some(o=>typeof o!=='string')||!Number.isInteger(q.ev.page))throw Error('Pregunta externa incompleta');const r=verifyQ(q,v,acc);q.state=r.state;q.score=r.score;q.checks=r.checks;q.reasons=r.reasons;if(q.state==='pending_validation')n++;else bad++;acc.push(q);imported.push(q)}
+      await atomicWrite(['questions'],tx=>imported.forEach(q=>tx.objectStore('questions').put(q)));await audit('job',`Importación externa: ${n} pendientes de revisión, ${bad} rechazadas`,{proposed:arr.length,validated:0,rejected:bad,pending:n,tokens:0,cost:0,reasons:{}});await load();S.modal=null;render();toast(`${n} en Revisar, ${bad} rechazadas (cita no encontrada o esquema)`)
     }catch(e){toast('JSON no válido: '+e.message,true)}
   },
   goal:async(d,e)=>{S.prof.goal=+e.target.value;await saveProf();render()},
-  export:async()=>{
-    const data={};for(const s of STORES)data[s]=s==='files'?[]:await dbAll(s);
-    const body=JSON.stringify(data),h=await sha256(new TextEncoder().encode(body).buffer);
-    const out=JSON.stringify({format:'testmaster-v1',created:new Date().toISOString(),sha256:h,data:body});
-    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/json'}));a.download='testmaster-copia-'+today()+'.json';a.click();toast('Copia exportada (sin PDF originales)');
-  },
+  export:()=>exportBackup(true),
   import:()=>$('#imp').click(),
   audit:()=>{
     const jobs=S.sessions&&[];dbAll('audit').then(rows=>{
@@ -592,22 +400,21 @@ const A={
       <h3 style="margin-top:12px">Errores técnicos (${E.length})</h3>${E.slice(-5).map(e=>`<div class="sm ko">${esc(e.msg)}</div>`).join('')||'<p class="mu sm">Ninguno.</p>'}<button style="margin-top:12px" data-a="close">Cerrar</button>`)});
   },
   wipe:()=>modal(`<h2>¿Borrar TODO?</h2><p class="mu">Esto no se puede deshacer. Exporta una copia antes.</p><div class="row"><button class="g" data-a="close">Cancelar</button><button class="dng g" data-a="wipeGo">Borrar todo</button></div>`),
-  wipeGo:async()=>{for(const s of STORES)await dbClear(s);await load();S.modal=null;S.tab='home';render()},
+  wipeGo:async()=>{await atomicWrite(STORES,tx=>STORES.forEach(s=>tx.objectStore(s).clear()));forgetReceipt();await load();S.modal=null;S.tab='home';render()},
 };
-document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el)return;const f=A[el.dataset.a];if(f){if(el.tagName==='SELECT')return;f(el.dataset,e)}});
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el)return;if(location.hash==='#seguro'&&!['safeExport','safeDiag'].includes(el.dataset.a))return;const f=A[el.dataset.a];if(f){if(el.tagName==='SELECT')return;dispatchAction(f,el.dataset,e)}});
 document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.a==='goal')A.goal({},e)});
 $('#file').addEventListener('change',async e=>{for(const f of e.target.files)await ingest(f);e.target.value='';render()});
-$('#imp').addEventListener('change',async e=>{
-  try{const f=e.target.files[0];if(!f)return;const o=JSON.parse(await f.text());if(o.format!=='testmaster-v1')throw new Error('Formato desconocido');
-    const h=await sha256(new TextEncoder().encode(o.data).buffer);if(h!==o.sha256)throw new Error('La copia está dañada (huella SHA-256 no coincide)');
-    const d=JSON.parse(o.data);for(const s of STORES){if(s==='files')continue;const cur=await dbAll(s),ids=new Map(cur.map(x=>[x.id,x]));
-      const stamp=o=>Math.max((o.st&&o.st.last)||0,o.ts||0,o.validatedAt||0,o.processed||0,o.created||0);
-      for(const x of d[s]||[]){const c=ids.get(x.id);if(!c||stamp(x)>stamp(c)||(s==='kv'&&x.xp>c.xp))await dbPut(s,x)}}
-    await load();render();toast('Copia importada y verificada ✔ (se conservó lo más reciente)')
-  }catch(err){toast(err.message,true)}e.target.value='';
-});
+</script>
+<script src="import.js"></script>
+<script src="study.js"></script>
+<script src="backup.js"></script>
+<script>
 (async()=>{
-  try{await openDB();await load();render();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{})}
+  try{await openDB();
+    if(navigator.locks){let enter;const acquired=new Promise(r=>enter=r);navigator.locks.request('testclau-active',{ifAvailable:true},lock=>{enter(!!lock);return lock?new Promise(()=>{}):undefined});if(!await acquired){$('#app').textContent='TESTCLAU está abierto en otra pestaña. Ciérrala y recarga esta página.';return}}
+    if(location.hash==='#seguro'){await safeMode();return}
+    await load();render();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{})}
   catch(e){$('#app').innerHTML='<div class="card">No se pudo abrir el almacenamiento local: '+esc(e.message)+'</div>'}
 })();
 </script>
